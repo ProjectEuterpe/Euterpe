@@ -16,7 +16,7 @@ find_package(Qt6 COMPONENTS
 	REQUIRED
 	)
 
-add_executable(Euterpe main.cpp player.cpp player.h player.ui)
+add_executable(Euterpe main.cpp Player.cpp Player.h Player.ui PlayerController.cpp PlayerController.h)
 target_link_libraries(Euterpe
 	Qt::Core
 	Qt::Gui

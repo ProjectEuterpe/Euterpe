@@ -1,4 +1,11 @@
-/*
+/**
+ * @file main.cpp
+ * @author Mikra Selene
+ * @version 1.0
+ * @date 2022.04.05
+ *
+ * @section LICENSE
+ *
  * Copyright (C) 2022 Mikra Selene
  *
  * This program is free software: you can redistribute it and/or modify it under
@@ -7,21 +14,23 @@
  * version.
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of  MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
  *
  * You should have received a copy of the GNU General Public License along with
- * this program.  If not, see <http://www.gnu.org/licenses/>.
+ * this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 #include <QApplication>
 
-#include "player.h"
+#include "Player.h"
+#include "PlayerController.h"
 
-int main(int argc, char *argv[]) {
-  QApplication a(argc, argv);
-  Player player(nullptr);
-  player.show();
+int main(int argc, char* argv[]) {
+  auto app = QPointer<QApplication>(new QApplication(argc, argv));
+  auto player = QPointer<Player>(new Player(nullptr));
+  auto controller = QPointer<PlayerController>(new PlayerController(player));
+  player->show();
   QApplication::exec();
 }
