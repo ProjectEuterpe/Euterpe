@@ -40,6 +40,7 @@ PlayerController::PlayerController(const QPointer<Player> &player) {
   on_click_connection(next, onClickNext);
   on_click_connection(stop, onClickStop);
   on_click_connection(info, onClickInfo);
+  on_click_connection(volume_icon, onClickVolumeIcon);
 #undef on_click_connection
 
   // connect changes of sliders to handlers
@@ -185,5 +186,17 @@ void PlayerController::atEnd() {
     player_->setButtonLabelPlay(!player_->loop());
   }
 }
+
+ void PlayerController::onClickVolumeIcon(){
+     qDebug() << "clicked: volume_icon";
+     float volume = player_->audioOutput()->volume();
+     if(volume){
+         player_->setButtonVolume(0);
+         emit changeVolume(0);
+     } else {
+         player_->setButtonVolume(1);
+         emit changeVolume(player_->sliderVolume());
+     }
+ }
 
 #pragma endregion

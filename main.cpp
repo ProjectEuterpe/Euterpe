@@ -23,6 +23,7 @@
  */
 
 #include <QApplication>
+#include <QFile>
 
 #include "Player.h"
 #include "PlayerController.h"
@@ -31,6 +32,18 @@ int main(int argc, char* argv[]) {
   auto app = QPointer<QApplication>(new QApplication(argc, argv));
   auto player = QPointer<Player>(new Player(nullptr));
   auto controller = QPointer<PlayerController>(new PlayerController(player));
+
+  /* read qss*/
+  QString qss;
+  QFile qssFile(":/qss/main.qss");
+  qssFile.open(QFile::ReadOnly);
+  if(qssFile.isOpen()){
+    qss = QLatin1String(qssFile.readAll());
+    qApp->setStyleSheet(qss);
+    qssFile.close();
+  }
+
   player->show();
   QApplication::exec();
+
 }

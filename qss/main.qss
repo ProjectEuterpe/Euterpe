@@ -1,0 +1,28 @@
+*{
+    background-color: rgb(254, 254, 254);
+}
+
+
+QWeight{
+}
+
+
+QPushButton{
+    color: rgb(0, 0, 2);
+    border: 1px solid rgb(210, 210, 210);
+    border-radius: 2px;
+    padding: 5px 10px 5px 10px;
+}
+QPushButton:hover{
+    background-color: rgb(240, 240, 240);
+}
+QPushButton:disabled{
+    background-color: rgb(220, 220, 220);
+}
+QPushButton#sound_icon{
+    border: 0px;
+}
+QPushButton#info{
+    border: 0px;
+    padding: 0;
+}

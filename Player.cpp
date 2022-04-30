@@ -81,7 +81,12 @@ void Player::setProgressSliderMax(int max) {
  * is to be set to "PAUSE".
  */
 void Player::setButtonLabelPlay(bool play) {
-  ui_->play->setText(QString{tr(play ? "PLAY" : "PAUSE")});
+//  ui_->play->setText(QString{tr(play ? "PLAY" : "PAUSE")});
+   ui_->play->setIcon(QIcon(play ? ":/images/circle-play.svg" : ":/images/circle-pause.svg"));
+}
+
+void Player::setButtonVolume(bool volume) {
+    ui_->volume_icon->setIcon(QIcon(volume ? ":/images/volume-open.svg" : ":/images/volume-close.svg"));
 }
 
 #pragma endregion

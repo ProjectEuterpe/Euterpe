@@ -59,6 +59,7 @@ class PlayerController : public QWidget {
   void onChangeProgress();
   void onChangeVolume();
   void onChangeRate();
+  void onClickVolumeIcon();
   void atEnd();
 
  private:
