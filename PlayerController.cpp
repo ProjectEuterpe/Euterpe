@@ -146,19 +146,12 @@ void PlayerController::onClickInfo() {
   qDebug() << "clicked: info";
   qDebug() << "media metadata:";
   auto metadata = player_->metaData();
+  QString text = "";
   for (auto k : metadata.keys()) {
     qDebug() << k << ":" << metadata[k];
+    text += metadata.metaDataKeyToString(k) + ":" + metadata[k].toString() + '\n';
   }
-      //停靠窗口1
-    QDockWidget *dw1 = new QDockWidget("停靠窗口1",this);//构建停靠窗口，指定父类
-
-    dw1->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetClosable);//设置停靠窗口特性，可移动，可关闭
-
-    dw1->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);//设置可停靠区域为主窗口左边和右边
-
-    QTextEdit *dte = new QTextEdit("DockWindow First");
-    dw1->setWidget(dte);
-//    addDockWidget(Qt::RightDockWidgetArea,dw1);
+  player_->addFloatTable(0, 0, text);
 
   emit info();
 }

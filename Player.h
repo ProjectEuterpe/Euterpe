@@ -51,6 +51,7 @@ class Player : public QWidget {
   void setButtonLabelPlay(bool play);
   void setButtonVolume(bool volume);
   void setPlayOrderIcon(int type);
+  void addFloatTable(float x, float y, QString text);
 
 #define nd [[nodiscard]]
   nd auto ui() const -> PlayerUiPtr;

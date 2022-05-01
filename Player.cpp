@@ -29,6 +29,7 @@
 #include <QTime>
 
 #include "ui_Player.h"
+#include "FloatPan.h"
 
 Player::Player(const QPointer<QWidget>& parent)
     : QWidget(parent), ui_(new Ui::Player) {
@@ -106,6 +107,17 @@ void Player::setPlayOrderIcon(int type){
   const QString playOrderTip[4] = {"onlyOnce","inOrder","randomLoop","singleLoop"};
   ui_->btn_play_order->setToolTip(playOrderTip[type]);
   ui_->btn_play_order->setIcon(QIcon(playOrderIcon[type]));
+}
+
+
+void Player::addFloatTable(float x, float y, QString str){
+  FloatTable *widget = new FloatTable(nullptr);
+  widget->setCustomText(str);
+  widget->setCustomPos(ui_->info->x() + ui_->info->width(), ui_->info->y() - 50);
+  widget->setCustomPos(ui_->info->mapToGlobal(QPoint(0,0)).x()- widget->width()/2 + ui_->info->width()/2,
+                       ui_->info->mapToGlobal(QPoint(0,0)).y() - widget->height());
+  widget->setWindowFlags(Qt::Popup);
+  widget->show();
 }
 
 
