@@ -4,16 +4,17 @@
         <file>images/circle-pause.svg</file>
         <file>images/circle-play.svg</file>
         <file>images/file-import.svg</file>
-        <file>images/inorder-play.svg</file>
-        <file>images/listLoop-play.svg</file>
         <file>images/media-info.svg</file>
-        <file>images/next-step.svg</file>
-        <file>images/previous-step.svg</file>
-        <file>images/randomLoop-play.svg</file>
         <file>images/rewind-play.svg</file>
         <file>images/rewind-stop.svg</file>
-        <file>images/singleLoop-play.svg</file>
         <file>images/volume-close.svg</file>
         <file>images/volume-open.svg</file>
+        <file>images/play-inOrder.svg</file>
+        <file>images/play-listLoop.svg</file>
+        <file>images/play-onlyOnce.svg</file>
+        <file>images/play-randomLoop.svg</file>
+        <file>images/play-singleLoop.svg</file>
+        <file>images/step-next.svg</file>
+        <file>images/step-previous.svg</file>
     </qresource>
 </RCC>

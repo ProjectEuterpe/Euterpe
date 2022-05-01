@@ -45,6 +45,8 @@ class PlayerController : public QWidget {
   void prev();
   void next();
   void info();
+  void btn_volume();
+  void btn_play_order();
   void changeRate(qreal rate);
   void changeProgress(qint64 progress);
   void changeVolume(float volume);
@@ -59,11 +61,13 @@ class PlayerController : public QWidget {
   void onChangeProgress();
   void onChangeVolume();
   void onChangeRate();
-  void onClickVolumeIcon();
+  void onClickBtnVolume();
+  void onClickBtnPlayOrder();
   void atEnd();
 
  private:
   QPointer<Player> player_;
+  enum PlayOrder { onlyOnce = 1, inOrder, randomLoop, singleLoop} playOrder = onlyOnce;
 };
 
 #endif  // EUTERPE__PLAYERCONTROLLER_H_

@@ -25,6 +25,8 @@
 #include "PlayerController.h"
 
 #include <QMediaMetaData>
+#include <QDockWidget>
+#include <QTextEdit>
 
 #include "ui_Player.h"
 
@@ -40,7 +42,8 @@ PlayerController::PlayerController(const QPointer<Player> &player) {
   on_click_connection(next, onClickNext);
   on_click_connection(stop, onClickStop);
   on_click_connection(info, onClickInfo);
-  on_click_connection(volume_icon, onClickVolumeIcon);
+  on_click_connection(btn_volume, onClickBtnVolume);
+  on_click_connection(btn_play_order, onClickBtnPlayOrder);
 #undef on_click_connection
 
   // connect changes of sliders to handlers
@@ -146,6 +149,17 @@ void PlayerController::onClickInfo() {
   for (auto k : metadata.keys()) {
     qDebug() << k << ":" << metadata[k];
   }
+      //停靠窗口1
+    QDockWidget *dw1 = new QDockWidget("停靠窗口1",this);//构建停靠窗口，指定父类
+
+    dw1->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetClosable);//设置停靠窗口特性，可移动，可关闭
+
+    dw1->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);//设置可停靠区域为主窗口左边和右边
+
+    QTextEdit *dte = new QTextEdit("DockWindow First");
+    dw1->setWidget(dte);
+//    addDockWidget(Qt::RightDockWidgetArea,dw1);
+
   emit info();
 }
 
@@ -159,10 +173,19 @@ void PlayerController::onChangeProgress() {
 
 /**
  * @brief Handler called when the value of the volume slider is changed.
+ * If the previous volume or current volume is 0, change then volume icon
+ * matching the current volume.
  */
 void PlayerController::onChangeVolume() {
   qDebug() << "changed: volume";
-  emit changeVolume(player_->sliderVolume());
+  float volumeCur = player_->sliderVolume();
+  float volumePre = player_->audioOutput()->volume();
+  if(volumeCur && !volumePre){
+      player_->setButtonVolume(1);
+  } else if(!volumeCur && volumePre){
+      player_->setButtonVolume(0);
+  }
+  emit changeVolume(volumeCur);
 }
 
 /**
@@ -182,21 +205,60 @@ void PlayerController::onChangeRate() {
 void PlayerController::atEnd() {
   if (player_->endOfMedia()) {
     qDebug() << "end of media";
-    emit player_->loop() ? play() : stop();
-    player_->setButtonLabelPlay(!player_->loop());
+//    emit player_->loop() ? play() : stop();
+//    player_->setButtonLabelPlay(!player_->loop());
+    bool continuePlay = playOrder!= onlyOnce;
+    emit continuePlay ? play() : stop();
+    player_->setButtonLabelPlay(!continuePlay);
   }
 }
 
- void PlayerController::onClickVolumeIcon(){
-     qDebug() << "clicked: volume_icon";
-     float volume = player_->audioOutput()->volume();
-     if(volume){
-         player_->setButtonVolume(0);
-         emit changeVolume(0);
-     } else {
-         player_->setButtonVolume(1);
-         emit changeVolume(player_->sliderVolume());
-     }
- }
+/**
+ * @brief Handler called when the value of `btn_volume` button is clicked.
+ * It set the volume 0 or previous value.
+ */
+void PlayerController::onClickBtnVolume(){
+  qDebug() << "clicked: btn_volume";
+  float volume = player_->audioOutput()->volume();
+  if(volume){
+    player_->setButtonVolume(0);
+    emit changeVolume(0);
+  } else {
+    player_->setButtonVolume(1);
+    emit changeVolume(player_->sliderVolume());
+  }
+}
+
+void PlayerController::onClickBtnPlayOrder(){
+  switch(playOrder){
+    case onlyOnce:{
+      qDebug() << "clicked: btn_play_order change to play onlyOnce";
+      playOrder = inOrder;
+      player_->setPlayOrderIcon(1);
+      break;
+    };
+    case inOrder:{
+      qDebug() << "clicked: btn_play_order change to play randomLoop";
+      playOrder = randomLoop;
+      player_->setPlayOrderIcon(2);
+      break;
+    };
+    case randomLoop:{
+      qDebug() << "clicked: btn_play_order change to play singleLoop";
+      playOrder = singleLoop;
+      player_->setPlayOrderIcon(3);
+      break;
+    };
+    case singleLoop:{
+      qDebug() << "clicked: btn_play_order change to play onlyOnce";
+      playOrder = onlyOnce;
+      player_->setPlayOrderIcon(0);
+      break;
+    };
+    default:{
+      qDebug() << "error!!";
+    };
+  }
+}
 
 #pragma endregion

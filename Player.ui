@@ -7,8 +7,20 @@
     <x>0</x>
     <y>0</y>
     <width>950</width>
-    <height>622</height>
+    <height>650</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>800</width>
+    <height>550</height>
+   </size>
   </property>
   <property name="maximumSize">
    <size>
@@ -22,6 +34,12 @@
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
     <widget class="QGroupBox" name="group_lib">
+     <property name="minimumSize">
+      <size>
+       <width>250</width>
+       <height>0</height>
+      </size>
+     </property>
      <property name="maximumSize">
       <size>
        <width>250</width>
@@ -32,24 +50,90 @@
       <enum>Qt::LeftToRight</enum>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_3">
+      <property name="spacing">
+       <number>7</number>
+      </property>
+      <property name="rightMargin">
+       <number>11</number>
+      </property>
+      <property name="bottomMargin">
+       <number>11</number>
+      </property>
       <item>
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>媒体库</string>
+       <widget class="QGroupBox" name="group_libTitle">
+        <property name="title">
+         <string/>
         </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <property name="leftMargin">
+          <number>2</number>
+         </property>
+         <property name="topMargin">
+          <number>2</number>
+         </property>
+         <property name="rightMargin">
+          <number>2</number>
+         </property>
+         <property name="bottomMargin">
+          <number>2</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>媒体库</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="open">
+           <property name="maximumSize">
+            <size>
+             <width>28</width>
+             <height>28</height>
+            </size>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="res.qrc">
+             <normaloff>:/images/file-import.svg</normaloff>:/images/file-import.svg</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>18</width>
+             <height>18</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
       <item>
-       <widget class="QTableView" name="tableView">
-        <property name="maximumSize">
+       <widget class="QScrollArea" name="scrollArea">
+        <property name="minimumSize">
          <size>
-          <width>400</width>
-          <height>16777215</height>
+          <width>0</width>
+          <height>0</height>
          </size>
         </property>
+        <property name="widgetResizable">
+         <bool>true</bool>
+        </property>
+        <widget class="QWidget" name="scrollAreaWidgetContents">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>224</width>
+           <height>561</height>
+          </rect>
+         </property>
+        </widget>
        </widget>
       </item>
      </layout>
@@ -57,7 +141,16 @@
    </item>
    <item row="0" column="1">
     <widget class="QGroupBox" name="group_play">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
      <layout class="QVBoxLayout" name="verticalLayout">
+      <property name="spacing">
+       <number>0</number>
+      </property>
       <item>
        <widget class="QVideoWidget" name="video_widget" native="true"/>
       </item>
@@ -76,6 +169,12 @@
          <bool>false</bool>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_2">
+         <property name="leftMargin">
+          <number>1</number>
+         </property>
+         <property name="rightMargin">
+          <number>1</number>
+         </property>
          <item>
           <widget class="QFrame" name="frame_2">
            <property name="sizePolicy">
@@ -106,6 +205,9 @@
             </item>
             <item>
              <widget class="QCheckBox" name="loop">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -113,64 +215,12 @@
                </sizepolicy>
               </property>
               <property name="text">
-               <string/>
+               <string extracomment="不用啦~"/>
               </property>
               <property name="icon">
                <iconset resource="res.qrc">
-                <normaloff>:/images/singleLoop-play.svg</normaloff>:/images/singleLoop-play.svg</iconset>
+                <normaloff>:/images/play-onlyOnce.svg</normaloff>:/images/play-onlyOnce.svg</iconset>
               </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="rewind">
-              <property name="text">
-               <string/>
-              </property>
-              <property name="icon">
-               <iconset resource="res.qrc">
-                <normaloff>:/images/rewind-play.svg</normaloff>:/images/rewind-play.svg</iconset>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QComboBox" name="rate">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="currentText">
-               <string>1x</string>
-              </property>
-              <property name="currentIndex">
-               <number>2</number>
-              </property>
-              <item>
-               <property name="text">
-                <string>0.25x</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>0.5x</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>1x</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>1.5x</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>2x</string>
-               </property>
-              </item>
              </widget>
             </item>
            </layout>
@@ -192,14 +242,13 @@
              <number>0</number>
             </property>
             <item>
-             <widget class="QPushButton" name="open">
-              <property name="text">
-               <string>OPEN</string>
-              </property>
-             </widget>
-            </item>
-            <item>
              <widget class="QLabel" name="time_label">
+              <property name="minimumSize">
+               <size>
+                <width>80</width>
+                <height>0</height>
+               </size>
+              </property>
               <property name="text">
                <string>--.-- / --.--</string>
               </property>
@@ -220,6 +269,55 @@
                </size>
               </property>
              </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btn_play_order">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>26</width>
+                <height>26</height>
+               </size>
+              </property>
+              <property name="cursor">
+               <cursorShape>ArrowCursor</cursorShape>
+              </property>
+              <property name="layoutDirection">
+               <enum>Qt::LeftToRight</enum>
+              </property>
+              <property name="autoFillBackground">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string extracomment="播放方式"/>
+              </property>
+              <property name="icon">
+               <iconset resource="res.qrc">
+                <normaloff>:/images/play-onlyOnce.svg</normaloff>:/images/play-onlyOnce.svg</iconset>
+              </property>
+              <property name="iconSize">
+               <size>
+                <width>16</width>
+                <height>16</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="rewind">
+              <property name="text">
+               <string/>
+              </property>
+              <property name="icon">
+               <iconset resource="res.qrc">
+                <normaloff>:/images/rewind-play.svg</normaloff>:/images/rewind-play.svg</iconset>
+              </property>
+             </widget>
             </item>
             <item>
              <widget class="QPushButton" name="prev">
@@ -243,7 +341,7 @@
               </property>
               <property name="icon">
                <iconset resource="res.qrc">
-                <normaloff>:/images/previous-step.svg</normaloff>:/images/previous-step.svg</iconset>
+                <normaloff>:/images/step-previous.svg</normaloff>:/images/step-previous.svg</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -275,6 +373,9 @@
                 <width>40</width>
                 <height>40</height>
                </size>
+              </property>
+              <property name="cursor">
+               <cursorShape>PointingHandCursor</cursorShape>
               </property>
               <property name="text">
                <string/>
@@ -313,7 +414,7 @@
               </property>
               <property name="icon">
                <iconset resource="res.qrc">
-                <normaloff>:/images/next-step.svg</normaloff>:/images/next-step.svg</iconset>
+                <normaloff>:/images/step-next.svg</normaloff>:/images/step-next.svg</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -343,8 +444,8 @@
               </property>
               <property name="minimumSize">
                <size>
-                <width>26</width>
-                <height>26</height>
+                <width>0</width>
+                <height>0</height>
                </size>
               </property>
               <property name="maximumSize">
@@ -352,6 +453,9 @@
                 <width>26</width>
                 <height>26</height>
                </size>
+              </property>
+              <property name="cursor">
+               <cursorShape>ArrowCursor</cursorShape>
               </property>
               <property name="text">
                <string/>
@@ -369,7 +473,7 @@
              </widget>
             </item>
             <item>
-             <spacer name="space2">
+             <spacer name="spacer2">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
               </property>
@@ -382,7 +486,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QPushButton" name="volume_icon">
+             <widget class="QPushButton" name="btn_volume">
               <property name="minimumSize">
                <size>
                 <width>26</width>
@@ -427,6 +531,47 @@
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
               </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="rate">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="currentText">
+               <string>1x</string>
+              </property>
+              <property name="currentIndex">
+               <number>2</number>
+              </property>
+              <item>
+               <property name="text">
+                <string>0.25x</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>0.5x</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>1x</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>1.5x</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>2x</string>
+               </property>
+              </item>
              </widget>
             </item>
            </layout>

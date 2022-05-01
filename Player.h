@@ -50,6 +50,7 @@ class Player : public QWidget {
   void setProgressSliderMax(int max);
   void setButtonLabelPlay(bool play);
   void setButtonVolume(bool volume);
+  void setPlayOrderIcon(int type);
 
 #define nd [[nodiscard]]
   nd auto ui() const -> PlayerUiPtr;

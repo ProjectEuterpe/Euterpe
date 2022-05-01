@@ -16,14 +16,16 @@ QPushButton{
 }
 QPushButton:hover{
     background-color: rgb(240, 240, 240);
+    color:red;
 }
 QPushButton:disabled{
     background-color: rgb(220, 220, 220);
 }
-QPushButton#sound_icon{
+QPushButton#btn_volume,#info,#btn_play_order{
     border: 0px;
+    padding: 5px;
 }
-QPushButton#info{
+QPushButton#play,#prev,#next{
     border: 0px;
-    padding: 0;
+    padding: 5px;
 }
