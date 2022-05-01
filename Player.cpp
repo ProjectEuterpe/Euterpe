@@ -29,7 +29,7 @@
 #include <QTime>
 
 #include "ui_Player.h"
-#include "FloatPan.h"
+#include "FloatTable.h"
 
 Player::Player(const QPointer<QWidget>& parent)
     : QWidget(parent), ui_(new Ui::Player) {

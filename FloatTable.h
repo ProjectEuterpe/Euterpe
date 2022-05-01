@@ -2,7 +2,7 @@
 #define FLOATPAN_H
 
 #include <QWidget>
-#include <ui_FloatPan.h>
+#include <ui_FloatTable.h>
 
 namespace Ui {
 class FloatTable;

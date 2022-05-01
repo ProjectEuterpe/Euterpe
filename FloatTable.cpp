@@ -1,5 +1,5 @@
-#include "FloatPan.h"
-#include "ui_FloatPan.h"
+#include "FloatTable.h"
+#include "ui_FloatTable.h"
 
 FloatTable::FloatTable(QWidget *parent) :
     QWidget(parent),
