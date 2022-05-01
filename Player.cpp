@@ -40,6 +40,7 @@ Player::Player(const QPointer<QWidget>& parent)
   audio_output_->setVolume(sliderVolume());  // necessary?
   media_player_->setAudioOutput(audio_output_);
   media_player_->setVideoOutput(ui_->video_widget);
+  setPlayOrderIcon(0);
 
   connect(ui_->open, &QPushButton::clicked,  //
           this, &Player::onClickOpen);
@@ -59,10 +60,13 @@ Player::~Player() { delete ui_; }
  */
 void Player::setLoopLock(bool lock) {
   if (lock) {
-    ui_->loop->setChecked(false);
-    ui_->loop->setEnabled(false);
+    setPlayOrderIcon(0); // set playOrderIcon to onlyOnce
+//    ui_->loop->setChecked(false);
+//    ui_->loop->setEnabled(false);
+    ui_->btn_play_order->setEnabled(false);
   } else {
-    ui_->loop->setEnabled(true);
+//    ui_->loop->setEnabled(true);
+    ui_->btn_play_order->setEnabled(true);
   }
 }
 
@@ -85,9 +89,25 @@ void Player::setButtonLabelPlay(bool play) {
    ui_->play->setIcon(QIcon(play ? ":/images/circle-play.svg" : ":/images/circle-pause.svg"));
 }
 
+/**
+ * @brief set the icon of btn_volume button.
+ * @param volume: true:volume>0 , false:volume=0.
+ */
 void Player::setButtonVolume(bool volume) {
-    ui_->volume_icon->setIcon(QIcon(volume ? ":/images/volume-open.svg" : ":/images/volume-close.svg"));
+    ui_->btn_volume->setIcon(QIcon(volume ? ":/images/volume-open.svg" : ":/images/volume-close.svg"));
 }
+
+/**
+ * @brief set the icon of btn_play_order button.
+ * @param type(index): Play order type (onlyOnce inOrder, randomLoop, singleLoop).
+ */
+void Player::setPlayOrderIcon(int type){
+  const QString playOrderIcon[4] = {":/images/play-onlyOnce.svg",":/images/play-inOrder.svg",":/images/play-randomLoop.svg",":/images/play-singleLoop.svg"};
+  const QString playOrderTip[4] = {"onlyOnce","inOrder","randomLoop","singleLoop"};
+  ui_->btn_play_order->setToolTip(playOrderTip[type]);
+  ui_->btn_play_order->setIcon(QIcon(playOrderIcon[type]));
+}
+
 
 #pragma endregion
 
