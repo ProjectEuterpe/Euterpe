@@ -47,6 +47,13 @@ Player::Player(const QPointer<QWidget>& parent)
           this, &Player::onClickOpen);
   connect(media_player_, &QMediaPlayer::positionChanged,  //
           this, &Player::progressing);
+  //全屏部分
+  connect(ui_->isfullScreen,&QPushButton::clicked,  //
+          this, &Player::onClickFullScreen);
+  isfullScreen=false;
+  ui_->video_widget->installEventFilter(this);
+  //获取鼠标悬停事件
+  ui_->video_widget->setAttribute(Qt::WA_Hover,true);
 }
 
 Player::~Player() { delete ui_; }
@@ -109,6 +116,28 @@ void Player::setPlayOrderIcon(int type){
   ui_->btn_play_order->setIcon(QIcon(playOrderIcon[type]));
 }
 
+void Player::setIsFullScreenIcon()
+{
+const QString isFullIcon[2] = {":/images/screen-full.svg",":/images/screen-common.svg"};
+
+ui_->isfullScreen->setIcon(QIcon( isFullIcon[int(isfullScreen)]));
+}
+
+void Player::changeFullScreen()
+{
+ if(isfullScreen)
+ {
+    ui_->group_play->setWindowFlags(Qt::Dialog|Qt::FramelessWindowHint);
+   ui_->group_play->showFullScreen();
+     ui_->control_pad->setHidden(true);
+ }
+ else {
+     ui_->group_play->setWindowFlags(Qt::SubWindow);
+        ui_->group_play->showNormal();
+         ui_->control_pad->setHidden(false);
+ }
+}
+
 
 void Player::addFloatTable(float x, float y, QString str){
   FloatTable *widget = new FloatTable(nullptr);
@@ -137,8 +166,8 @@ auto Player::audioOutput() const -> QPointer<QAudioOutput> {
 
 bool Player::rewind() const { return ui_->rewind->isChecked(); }
 
-bool Player::loop() const { return ui_->loop->isChecked(); }
-
+//bool Player::loop() const { return ui_->loop->isChecked(); }
+bool Player::isFullScreen() const { return isfullScreen; }
 auto Player::duration() const -> qint64 { return media_player_->duration(); }
 
 auto Player::totalTime() const -> qint64 { return duration() / 1000; }
@@ -209,6 +238,32 @@ void Player::onClickOpen() {
   } else {
     qDebug() << "open: rejected";
   }
+}
+
+void Player::onClickFullScreen()
+{
+isfullScreen=!isfullScreen;
+
+qDebug()<<"click:FullScreen:"<<isfullScreen;
+setIsFullScreenIcon();
+changeFullScreen();
+
+}
+
+bool Player::eventFilter(QObject *obj, QEvent *e)
+{ //不是全屏状态 或者 不是播放框
+
+   if(isfullScreen&& obj==ui_->video_widget)
+   {
+       if (e->type() == QEvent::HoverMove)//鼠标移动
+           {
+               qDebug()<<"mouse:move";
+              emit showBar();
+              ui_->control_pad->setHidden(false);
+           }
+   }
+   // 事件交给上层对话框进行处理
+       return QWidget::eventFilter(obj,e);
 }
 
 #pragma endregion

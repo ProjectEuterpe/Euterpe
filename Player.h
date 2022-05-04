@@ -51,6 +51,8 @@ class Player : public QWidget {
   void setButtonLabelPlay(bool play);
   void setButtonVolume(bool volume);
   void setPlayOrderIcon(int type);
+   void setIsFullScreenIcon();
+   void changeFullScreen();
   void addFloatTable(float x, float y, QString text);
 
 #define nd [[nodiscard]]
@@ -58,7 +60,8 @@ class Player : public QWidget {
   nd auto mediaPlayer() const -> QPointer<QMediaPlayer>;
   nd auto audioOutput() const -> QPointer<QAudioOutput>;
   nd bool rewind() const;
-  nd bool loop() const;
+ // nd bool loop() const;
+   nd bool isFullScreen() const;
   nd auto duration() const -> qint64;
   nd auto totalTime() const -> qint64;
   nd auto metaData() const -> QMediaMetaData;
@@ -68,10 +71,15 @@ class Player : public QWidget {
   nd auto comboBoxRate() const -> qreal;
   nd bool endOfMedia() const;
 #undef nd
+signals:
+  //全屏状态下，展示工具栏
+  void showBar();
 
  private slots:
   void progressing(qint64 progress);
   void onClickOpen();
+void onClickFullScreen();
+bool eventFilter(QObject *, QEvent *) override;
 
  private:
   void initMedia(const QUrl &url);
@@ -81,6 +89,7 @@ class Player : public QWidget {
   PlayerUiPtr ui_;
   QPointer<QMediaPlayer> media_player_;
   QPointer<QAudioOutput> audio_output_;
+  bool isfullScreen;
 };
 
 #endif  // EUTERPE__PLAYER_H_

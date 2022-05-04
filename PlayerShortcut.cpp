@@ -64,7 +64,7 @@ AddSliderShortcut("ctrl+Up",true,+20);
  QPointer<QShortcut> newShortcut=GenerateShortcut("ctrl+i");
  connect(newShortcut,&QShortcut::activated,parent->ui()->open,&QPushButton::click);
 newShortcut=GenerateShortcut("ctrl+F");
- connect(newShortcut,&QShortcut::activated,parent->ui()->fullScreen,&QPushButton::click);
+ connect(newShortcut,&QShortcut::activated,parent->ui()->isfullScreen,&QPushButton::click);
 }
 
 //shortcut指类似“Ctrl+D"等的描述

@@ -44,6 +44,18 @@
       <property name="spacing">
        <number>0</number>
       </property>
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
       <item>
        <widget class="QVideoWidget" name="video_widget" native="true">
         <property name="enabled">
@@ -95,9 +107,9 @@
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="loop">
+             <widget class="QPushButton" name="isfullScreen">
               <property name="enabled">
-               <bool>false</bool>
+               <bool>true</bool>
               </property>
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -106,11 +118,11 @@
                </sizepolicy>
               </property>
               <property name="text">
-               <string extracomment="不用啦~"/>
+               <string/>
               </property>
               <property name="icon">
                <iconset resource="res.qrc">
-                <normaloff>:/images/play-onlyOnce.svg</normaloff>:/images/play-onlyOnce.svg</iconset>
+                <normaloff>:/images/screen-full.svg</normaloff>:/images/screen-full.svg</iconset>
               </property>
              </widget>
             </item>
@@ -574,8 +586,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>224</width>
-           <height>561</height>
+           <width>220</width>
+           <height>547</height>
           </rect>
          </property>
         </widget>
