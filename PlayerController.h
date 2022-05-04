@@ -26,7 +26,7 @@
 #define EUTERPE__PLAYERCONTROLLER_H_
 
 #include <QPointer>
-
+#include<QTimer>
 #include "Player.h"
 
 class PlayerController : public QWidget {
@@ -35,7 +35,10 @@ class PlayerController : public QWidget {
  public:
   explicit PlayerController(const QPointer<Player> &player);
   ~PlayerController() override = default;
-
+   //快捷键使用部分
+    void doShortcutEvent(const char*name);
+    void setVolumeValue(const int add);
+    void setProgressValue(const int add);
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "NotImplementedFunctions"
  signals:
@@ -64,10 +67,13 @@ class PlayerController : public QWidget {
   void onClickBtnVolume();
   void onClickBtnPlayOrder();
   void atEnd();
-
+  void onTimerStart();
+  void onTimerEnd();
  private:
   QPointer<Player> player_;
   enum PlayOrder { onlyOnce = 1, inOrder, randomLoop, singleLoop} playOrder = onlyOnce;
+  //鼠标不移动，计时5秒
+QPointer<QTimer>showBarTimer;
 };
 
 #endif  // EUTERPE__PLAYERCONTROLLER_H_

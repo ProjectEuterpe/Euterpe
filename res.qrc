@@ -16,5 +16,7 @@
         <file>images/play-singleLoop.svg</file>
         <file>images/step-next.svg</file>
         <file>images/step-previous.svg</file>
+        <file>images/screen-common.svg</file>
+        <file>images/screen-full.svg</file>
     </qresource>
 </RCC>

@@ -33,7 +33,7 @@
 PlayerController::PlayerController(const QPointer<Player> &player) {
   player_ = player;
   auto ui = player_->ui();
-
+showBarTimer=new QTimer();
   // connect clicks on buttons to handlers
 #define on_click_connection(sender, slot) \
   connect(ui->sender, &QPushButton::clicked, this, &PlayerController::slot)
@@ -79,7 +79,25 @@ PlayerController::PlayerController(const QPointer<Player> &player) {
           &QAudioOutput::setVolume);
   connect(player_->mediaPlayer(), &QMediaPlayer::mediaStatusChanged, this,
           &PlayerController::atEnd);
+  //全屏时工具栏计时器
+ connect(showBarTimer,&QTimer::timeout,this,&PlayerController::onTimerEnd);
+ connect(player_,&Player::showBar,this,&PlayerController::onTimerStart);
 #undef control_connection
+}
+void PlayerController::doShortcutEvent(const char *name)
+{qDebug()<<"shortcut:name";
+QMetaObject::invokeMethod(this,name,Qt::DirectConnection);
+}
+void PlayerController::setVolumeValue(const int add)
+{qDebug()<<"shortcut:changeVolum";
+    float nowVolume=player_->ui()->volume_slider->value();
+      player_->ui()->volume_slider->setFocus();
+player_->ui()->volume_slider->setValue(nowVolume+add);
+}
+
+void PlayerController::setProgressValue(const int add)
+{
+
 }
 
 #pragma region  // region: controller slots
@@ -204,6 +222,21 @@ void PlayerController::atEnd() {
     emit continuePlay ? play() : stop();
     player_->setButtonLabelPlay(!continuePlay);
   }
+}
+
+void PlayerController::onTimerStart()
+{qDebug() << "TimeStart";
+showBarTimer->stop();
+showBarTimer->start(5000);
+}
+
+void PlayerController::onTimerEnd()
+{
+    //隐藏
+    qDebug() << "TimeOut";
+    if(player_->isFullScreen())
+player_->ui()->control_pad->setHidden(true);
+    showBarTimer->stop();
 }
 
 /**
