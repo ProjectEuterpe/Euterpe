@@ -54,6 +54,7 @@ Player::Player(const QPointer<QWidget>& parent)
   ui_->video_widget->installEventFilter(this);
   //获取鼠标悬停事件
   ui_->video_widget->setAttribute(Qt::WA_Hover,true);
+  ui_->progress_slider->setAttribute(Qt::WA_Hover,true);
 }
 
 Player::~Player() { delete ui_; }
@@ -150,6 +151,7 @@ void Player::addFloatTable(float x, float y, QString str){
 }
 
 
+
 #pragma endregion
 
 #pragma region  // region: get values and status of the player
@@ -173,7 +175,7 @@ auto Player::duration() const -> qint64 { return media_player_->duration(); }
 auto Player::totalTime() const -> qint64 { return duration() / 1000; }
 
 auto Player::metaData() const -> QMediaMetaData {
-  return media_player_->metaData();
+    return media_player_->metaData();
 }
 
 auto Player::state() const -> QMediaPlayer::PlaybackState {
@@ -262,6 +264,7 @@ bool Player::eventFilter(QObject *obj, QEvent *e)
               ui_->control_pad->setHidden(false);
            }
    }
+
    // 事件交给上层对话框进行处理
        return QWidget::eventFilter(obj,e);
 }

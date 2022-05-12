@@ -60,6 +60,10 @@ void PlayerShortcut::Init()
 AddShortcut("ctrl+Right","onClickNext");
 AddSliderShortcut("ctrl+down",true,-20);
 AddSliderShortcut("ctrl+Up",true,+20);
+AddSliderShortcut("down",false,-1);
+AddSliderShortcut("up",false,+1);
+AddSliderShortcut("left",false,-5);
+AddSliderShortcut("right",false,+5);
 //唤起添加资源导入弹窗
  QPointer<QShortcut> newShortcut=GenerateShortcut("ctrl+i");
  connect(newShortcut,&QShortcut::activated,parent->ui()->open,&QPushButton::click);

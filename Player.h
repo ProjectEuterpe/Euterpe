@@ -54,7 +54,6 @@ class Player : public QWidget {
    void setIsFullScreenIcon();
    void changeFullScreen();
   void addFloatTable(float x, float y, QString text);
-
 #define nd [[nodiscard]]
   nd auto ui() const -> PlayerUiPtr;
   nd auto mediaPlayer() const -> QPointer<QMediaPlayer>;
@@ -74,7 +73,6 @@ class Player : public QWidget {
 signals:
   //全屏状态下，展示工具栏
   void showBar();
-
  private slots:
   void progressing(qint64 progress);
   void onClickOpen();

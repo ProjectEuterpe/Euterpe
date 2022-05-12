@@ -22,7 +22,8 @@ find_package(Qt6 COMPONENTS
 
   qt6_add_resources(QRC_FILES ${QRC_SOURCES_FILES})
   source_group("Resource Files" FILES ${QRC_SOURCES_FILES})
-add_executable(Euterpe main.cpp Player.cpp Player.h Player.ui PlayerController.cpp PlayerController.h FloatTable.h FloatTable.cpp FloatTable.ui  ${QRC_FILES}  PlayerShortcut.h PlayerShortcut.cpp)
+add_executable(Euterpe main.cpp Player.cpp Player.h Player.ui PlayerController.cpp PlayerController.h FloatTable.h FloatTable.cpp FloatTable.ui  ${QRC_FILES}
+    PlayerShortcut.h PlayerShortcut.cpp GetFrameData.h GetFrameData.cpp)
 target_link_libraries(Euterpe
         Qt::Core
         Qt::Gui

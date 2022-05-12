@@ -24,7 +24,6 @@
 
 #include "PlayerController.h"
 
-#include <QMediaMetaData>
 #include <QDockWidget>
 #include <QTextEdit>
 
@@ -83,21 +82,37 @@ showBarTimer=new QTimer();
  connect(showBarTimer,&QTimer::timeout,this,&PlayerController::onTimerEnd);
  connect(player_,&Player::showBar,this,&PlayerController::onTimerStart);
 #undef control_connection
+  frameData=QPointer<GetFrameData>{new GetFrameData(player_)};
 }
+//快捷键
 void PlayerController::doShortcutEvent(const char *name)
-{qDebug()<<"shortcut:name";
+{qDebug()<<"shortcut:"<<name;
 QMetaObject::invokeMethod(this,name,Qt::DirectConnection);
 }
+
 void PlayerController::setVolumeValue(const int add)
 {qDebug()<<"shortcut:changeVolum";
     float nowVolume=player_->ui()->volume_slider->value();
       player_->ui()->volume_slider->setFocus();
 player_->ui()->volume_slider->setValue(nowVolume+add);
 }
-
+//进度微调
 void PlayerController::setProgressValue(const int add)
-{
+{     player_->mediaPlayer()->pause();
+    qDebug()<<"beforeProgressPos:"<<player_->mediaPlayer()->position();
+   qint64 target= frameData->GetTargetFrameTime(player_->mediaPlayer()->position(),add);
+     if(target<0)target=0;
+     else
+     if(target>player_->duration())target=player_->duration();
+   player_->ui()->progress_slider->setValue(target);
+     player_->mediaPlayer()->setPosition(target);
+   qDebug()<<"afterProgressPos:"<<player_->mediaPlayer()->position();
+     player_->mediaPlayer()->play();
+}
 
+QVariant PlayerController::getMetaMes(QMediaMetaData::Key key)
+{
+return player_->metaData().value(key);
 }
 
 #pragma region  // region: controller slots
@@ -115,9 +130,7 @@ void PlayerController::onClickPlay() {
   bool playing = player_->state() == QMediaPlayer::PlayingState;
   emit playing ? pause() : play();
   player_->setButtonLabelPlay(playing);
-
   player_->setProgressSliderMax(static_cast<int>(player_->duration()));
-
   // default values of artist and title will be "Untitled" and "V/A"
   auto metadata = player_->metaData();
   auto artist = metadata.value(QMediaMetaData::AlbumArtist).toString();
@@ -125,6 +138,7 @@ void PlayerController::onClickPlay() {
   if (artist == "") {
     artist = metadata.value(QMediaMetaData::ContributingArtist).toString();
   }  // todo!
+
   player_->setWindowTitle(QString("%1 - %2").arg(
       artist == "" ? "V/A" : artist, title == "" ? "Untitled" : title));
 }
@@ -170,7 +184,6 @@ void PlayerController::onClickInfo() {
     text += metadata.metaDataKeyToString(k) + ":" + metadata[k].toString() + '\n';
   }
   player_->addFloatTable(0, 0, text);
-
   emit info();
 }
 
@@ -238,6 +251,8 @@ void PlayerController::onTimerEnd()
 player_->ui()->control_pad->setHidden(true);
     showBarTimer->stop();
 }
+
+
 
 /**
  * @brief Handler called when the value of `btn_volume` button is clicked.

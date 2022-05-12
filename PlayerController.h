@@ -24,11 +24,11 @@
 
 #ifndef EUTERPE__PLAYERCONTROLLER_H_
 #define EUTERPE__PLAYERCONTROLLER_H_
-
+#include<QMediaMetaData>
 #include <QPointer>
 #include<QTimer>
 #include "Player.h"
-
+#include"GetFrameData.h"
 class PlayerController : public QWidget {
   Q_OBJECT
 
@@ -39,6 +39,9 @@ class PlayerController : public QWidget {
     void doShortcutEvent(const char*name);
     void setVolumeValue(const int add);
     void setProgressValue(const int add);
+    //整理获取元数据
+    //获取单一元数据
+  QVariant getMetaMes(QMediaMetaData::Key key);
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "NotImplementedFunctions"
  signals:
@@ -74,6 +77,7 @@ class PlayerController : public QWidget {
   enum PlayOrder { onlyOnce = 1, inOrder, randomLoop, singleLoop} playOrder = onlyOnce;
   //鼠标不移动，计时5秒
 QPointer<QTimer>showBarTimer;
+QPointer<GetFrameData>frameData;
 };
 
 #endif  // EUTERPE__PLAYERCONTROLLER_H_
