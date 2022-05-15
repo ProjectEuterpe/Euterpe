@@ -26,13 +26,13 @@
 
 #include <QDockWidget>
 #include <QTextEdit>
-
+#include"ProgressSlider.h"
 #include "ui_Player.h"
 
 PlayerController::PlayerController(const QPointer<Player> &player) {
   player_ = player;
   auto ui = player_->ui();
-showBarTimer=new QTimer();
+
   // connect clicks on buttons to handlers
 #define on_click_connection(sender, slot) \
   connect(ui->sender, &QPushButton::clicked, this, &PlayerController::slot)
@@ -79,12 +79,22 @@ showBarTimer=new QTimer();
   connect(player_->mediaPlayer(), &QMediaPlayer::mediaStatusChanged, this,
           &PlayerController::atEnd);
   //全屏时工具栏计时器
+  showBarTimer=QPointer<QTimer>{new QTimer()};
  connect(showBarTimer,&QTimer::timeout,this,&PlayerController::onTimerEnd);
  connect(player_,&Player::showBar,this,&PlayerController::onTimerStart);
+
 #undef control_connection
   frameData=QPointer<GetFrameData>{new GetFrameData(player_)};
+  //帧展示
+  connect(frameData,&GetFrameData::doneGetFrame,this,&PlayerController::showFrameData);
+  connect(player_->ui()->progress_slider,&ProgressSlider::onDoubleClick,this,&PlayerController::onProgressDoubleClick);
+//计算关闭帧
+  showFrameTimer=QPointer<QTimer>{new QTimer()};
+  showFrameTimer->setSingleShot(true);
+connect(showFrameTimer,&QTimer::timeout,player_,&Player::closeFrameShow);
 }
-//快捷键
+
+//快捷键使用
 void PlayerController::doShortcutEvent(const char *name)
 {qDebug()<<"shortcut:"<<name;
 QMetaObject::invokeMethod(this,name,Qt::DirectConnection);
@@ -98,7 +108,9 @@ player_->ui()->volume_slider->setValue(nowVolume+add);
 }
 //进度微调
 void PlayerController::setProgressValue(const int add)
-{     player_->mediaPlayer()->pause();
+{       bool playing = player_->state() == QMediaPlayer::PlayingState;
+        if(playing)
+    player_->mediaPlayer()->pause();
     qDebug()<<"beforeProgressPos:"<<player_->mediaPlayer()->position();
    qint64 target= frameData->GetTargetFrameTime(player_->mediaPlayer()->position(),add);
      if(target<0)target=0;
@@ -107,6 +119,7 @@ void PlayerController::setProgressValue(const int add)
    player_->ui()->progress_slider->setValue(target);
      player_->mediaPlayer()->setPosition(target);
    qDebug()<<"afterProgressPos:"<<player_->mediaPlayer()->position();
+       if(playing)
      player_->mediaPlayer()->play();
 }
 
@@ -251,6 +264,23 @@ void PlayerController::onTimerEnd()
 player_->ui()->control_pad->setHidden(true);
     showBarTimer->stop();
 }
+
+void PlayerController::onProgressDoubleClick(const double per)
+{
+    //获取目标时间
+ int target=per*getMetaMes(QMediaMetaData::Duration).toInt();
+ qDebug()<<"Double Click time:"<<target;
+ player_->setFramePos(per);
+ frameData->GetTargetFrameImage(target);
+
+}
+
+void PlayerController::showFrameData( QImage image)
+{
+  player_->setFrame(image);
+showFrameTimer->start(1500);
+}
+
 
 
 

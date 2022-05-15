@@ -23,13 +23,13 @@
  */
 
 #include "Player.h"
-
+#include"ProgressSlider.h"
 #include <QFileDialog>
 #include <QMediaMetaData>
 #include <QTime>
 
 #include "ui_Player.h"
-#include "FloatTable.h"
+
 
 Player::Player(const QPointer<QWidget>& parent)
     : QWidget(parent), ui_(new Ui::Player) {
@@ -52,9 +52,10 @@ Player::Player(const QPointer<QWidget>& parent)
           this, &Player::onClickFullScreen);
   isfullScreen=false;
   ui_->video_widget->installEventFilter(this);
-  //获取鼠标悬停事件
   ui_->video_widget->setAttribute(Qt::WA_Hover,true);
-  ui_->progress_slider->setAttribute(Qt::WA_Hover,true);
+  frame=QPointer<FloatTable>{new FloatTable()};
+   frame->setWindowFlags(Qt::Popup);
+  frame->setHidden(true);
 }
 
 Player::~Player() { delete ui_; }
@@ -150,6 +151,28 @@ void Player::addFloatTable(float x, float y, QString str){
   widget->show();
 }
 
+void Player::setFrame(QImage image)
+{ qDebug()<<"set frame";
+    frame->setCustomImage(image.scaled(195,115,Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    frame->setCustomPos(frame->x()-frame->width()/2,
+                         ui_->progress_slider->mapToGlobal(QPoint(0,0)).y() - frame->height());
+
+    frame->show();
+}
+
+void Player::setFramePos(float x)
+{
+  frame->setCustomPos(ui_->progress_slider->mapToGlobal(QPoint(0,0)).x() + ui_->progress_slider->width()*x,0);
+}
+
+
+
+void Player::closeFrameShow()
+{
+    frame->setHidden(true);
+    qDebug()<<"closeFrame";
+}
+
 
 
 #pragma endregion
@@ -200,8 +223,10 @@ auto Player::comboBoxRate() const -> qreal {
 }
 
 bool Player::endOfMedia() const {
-  return media_player_->mediaStatus() == QMediaPlayer::EndOfMedia;
+    return media_player_->mediaStatus() == QMediaPlayer::EndOfMedia;
 }
+
+
 
 #pragma endregion
 
@@ -219,7 +244,7 @@ void Player::progressing(qint64 progress) {
   if (!ui_->progress_slider->isSliderDown()) {
     ui_->progress_slider->setValue(static_cast<int>(progress));
   }
-  // qDebug() << progress;
+   //qDebug() << progress;
   updateTimeLabel(progress / 1000);
 }
 

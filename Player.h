@@ -30,7 +30,7 @@
 #include <QPointer>
 #include <QVariant>
 #include <QWidget>
-
+#include "FloatTable.h"
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class Player;
@@ -54,6 +54,9 @@ class Player : public QWidget {
    void setIsFullScreenIcon();
    void changeFullScreen();
   void addFloatTable(float x, float y, QString text);
+  //展示帧图相关
+  void setFrame(QImage image);
+  void setFramePos(float x);
 #define nd [[nodiscard]]
   nd auto ui() const -> PlayerUiPtr;
   nd auto mediaPlayer() const -> QPointer<QMediaPlayer>;
@@ -69,6 +72,9 @@ class Player : public QWidget {
   nd auto sliderProgress() const -> qint64;
   nd auto comboBoxRate() const -> qreal;
   nd bool endOfMedia() const;
+public slots:
+  //定时关闭展示的frame
+  void closeFrameShow();
 #undef nd
 signals:
   //全屏状态下，展示工具栏
@@ -82,12 +88,12 @@ bool eventFilter(QObject *, QEvent *) override;
  private:
   void initMedia(const QUrl &url);
   void updateTimeLabel(qint64 time);
-
  private:
   PlayerUiPtr ui_;
   QPointer<QMediaPlayer> media_player_;
   QPointer<QAudioOutput> audio_output_;
   bool isfullScreen;
+ QPointer<FloatTable>frame;
 };
 
 #endif  // EUTERPE__PLAYER_H_

@@ -44,7 +44,6 @@ bool PlayerShortcut::AddSliderShortcut(const char *shortcut, bool isVolume, int 
 
 void PlayerShortcut::RemoveShortcut(const char* shortcut)
 {
-
  auto target=shortcutList.find(shortcut);
  if(target!=shortcutList.end()){
      disconnect(target.value(),0,0,0);

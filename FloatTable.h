@@ -16,7 +16,7 @@ public:
     ~FloatTable();
     void setCustomText(QString text);
     void setCustomPos(float x, float y);
-
+   void setCustomImage(QImage image);
 private:
     Ui::FloatTable *ui;
 };

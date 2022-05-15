@@ -1,6 +1,6 @@
 #include "FloatTable.h"
 #include "ui_FloatTable.h"
-
+#include<QTextCursor>
 FloatTable::FloatTable(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::FloatTable)
@@ -17,6 +17,11 @@ FloatTable::~FloatTable(){
 
 void FloatTable::setCustomPos(float x1, float y1){
     this->setGeometry( x1, y1, ui->textEdit->width(), ui->textEdit->height());
+}
+
+void FloatTable::setCustomImage(QImage image)
+{  ui->textEdit->setText("");
+    ui->textEdit->textCursor().insertImage(image);
 }
 
 void FloatTable::setCustomText(QString text){

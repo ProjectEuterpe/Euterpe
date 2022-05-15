@@ -72,11 +72,17 @@ class PlayerController : public QWidget {
   void atEnd();
   void onTimerStart();
   void onTimerEnd();
+  //进度条双击处理，实现帧图展现
+  void onProgressDoubleClick(const double);
+    void showFrameData(QImage image);
+
  private:
   QPointer<Player> player_;
   enum PlayOrder { onlyOnce = 1, inOrder, randomLoop, singleLoop} playOrder = onlyOnce;
   //鼠标不移动，计时5秒
 QPointer<QTimer>showBarTimer;
+//计时300ms，关闭展示的Frame
+QPointer<QTimer>showFrameTimer;
 QPointer<GetFrameData>frameData;
 };
 
