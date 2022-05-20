@@ -148,6 +148,7 @@ void Player::addFloatTable(QPushButton* info, QString str){
 }
 
 void Player::addMediaItemBox(QMediaMetaData metaData){
+  if(metaData.isEmpty()) return;
   MediaItemBox *widget = new MediaItemBox(this);
   QString artist = "artist";
   QString title = "title";
