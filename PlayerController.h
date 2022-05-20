@@ -27,8 +27,11 @@
 #include <QMediaMetaData>
 #include <QPointer>
 #include <QTimer>
+
 #include "Player.h"
+#include "MediaItemBox.h"
 #include "GetFrameData.h"
+
 class PlayerController : public QWidget {
   Q_OBJECT
 
@@ -77,12 +80,15 @@ class PlayerController : public QWidget {
   void atEnd();
   void onTimerStart();
   void onTimerEnd();
+  void onChangeMetaData();
  private:
   QPointer<Player> player_;
   enum PlayOrder { onlyOnce = 1, inOrder, randomLoop, singleLoop} playOrder = onlyOnce;
   //鼠标不移动，计时5秒
-QPointer<QTimer>showBarTimer;
-QPointer<GetFrameData>frameData;
+  QPointer<QTimer>showBarTimer;
+  QPointer<GetFrameData>frameData;
+  QPointer<MediaItemBox> curMediaItemBox;
+  QList<QPointer<MediaItemBox>> mediaListBox;
 };
 
 #endif  // EUTERPE__PLAYERCONTROLLER_H_

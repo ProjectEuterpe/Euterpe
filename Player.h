@@ -58,8 +58,10 @@ class Player : public QWidget {
   void setMediaUrl(const QUrl &newMedia_url);
   void changeFullScreen();
   void addFloatTable(QPushButton* info, QString text);
-  void addMediaItemBox(QMediaMetaData metadata);
+  void addMediaItemBox(QWidget* widget);
   void addMediaItemSpacerV();
+  void stopMedia();
+  void pauseMedia();
 
 #define nd [[nodiscard]]
   nd auto ui() const -> PlayerUiPtr;
@@ -86,7 +88,6 @@ private slots:
  void onClickOpen();
  void onClickFullScreen();
  bool eventFilter(QObject *, QEvent *) override;
- void onChangeMetaData();
 
  private:
   void initMedia(const QUrl &url);
@@ -94,10 +95,11 @@ private slots:
 
  private:
   PlayerUiPtr ui_;
-  QUrl media_url_;
   QPointer<QMediaPlayer> media_player_;
   QPointer<QAudioOutput> audio_output_;
   bool isfullScreen;
+ public:
+  QUrl media_url_;
 };
 
 #endif  // EUTERPE__PLAYER_H_

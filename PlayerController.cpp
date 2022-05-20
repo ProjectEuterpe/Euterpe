@@ -27,7 +27,6 @@
 #include <QDockWidget>
 #include <QTextEdit>
 
-#include "MediaItemBox.h"
 #include "ui_Player.h"
 
 PlayerController::PlayerController(const QPointer<Player> &player) {
@@ -46,6 +45,7 @@ showBarTimer=new QTimer();
   on_click_connection(btn_play_order, onClickBtnPlayOrder);
 #undef on_click_connection
 
+
   // connect changes of sliders to handlers
 #define on_change_slider_connection(sender, signal, slot) \
   connect(ui->sender, &QSlider::signal, this, &PlayerController::slot)
@@ -59,6 +59,9 @@ showBarTimer=new QTimer();
           &PlayerController::onChangeRate);
   connect(ui->rate, &QComboBox::currentTextChanged, this,
           &PlayerController::onChangeRate);
+
+  connect(player_->mediaPlayer(), &QMediaPlayer::metaDataChanged,  //
+          this, &PlayerController::onChangeMetaData);
 
   // connect signals to Qt media controllers
 #define media_control_connection(signal, slot) \
@@ -124,7 +127,46 @@ void PlayerController::initMediaList(){
 }
 
 void PlayerController::addMediaItem(QMediaMetaData metaData){
-//  player_->addMediaItemBox(metaData);
+  if(metaData.isEmpty()) return;
+  MediaItemBox *widget = new MediaItemBox(player_.get());
+  QString artist = "artist";
+  QString title = "title";
+  QVariant artistVar = metaData.value(QMediaMetaData::AlbumArtist);
+  QVariant titleVar = metaData.value(QMediaMetaData::Title);
+  if(artistVar.isNull()){
+      artist = "unknow artist";
+  } else {
+      artist = artistVar.toString();
+  }
+  if(titleVar.isNull()){
+      title = "unknow title";
+  } else {
+      title = titleVar.toString();
+  }
+  widget->setMetaData(metaData);
+  widget->setArtist(artist);
+  widget->setTitle(title);
+  widget->setMediaUrl(player_->media_url_);
+  player_->addMediaItemBox(widget);
+
+  if(!curMediaItemBox.isNull()) curMediaItemBox->setActive(false);
+  curMediaItemBox = widget;
+  curMediaItemBox->setActive(true);
+  mediaListBox.append(widget);
+}
+
+void PlayerController::onChangeMetaData(){
+qDebug()<<"onChangeMetaData";
+  // 检查 media_url_ 是否存在与列表中
+  for(int i = 0, len = mediaListBox.length(); i< len;i++){
+    if(mediaListBox[i]->getMediaUrl().toString() == player_->media_url_.toString()){
+        curMediaItemBox->setActive(false);
+        curMediaItemBox = mediaListBox[i];
+        curMediaItemBox->setActive(true);
+        return;
+    }
+  }
+  addMediaItem(player_->metaData());
 }
 
 #pragma region  // region: controller slots
@@ -142,6 +184,7 @@ void PlayerController::onClickPlay() {
   bool playing = player_->state() == QMediaPlayer::PlayingState;
   emit playing ? pause() : play();
   player_->setButtonLabelPlay(playing);
+  curMediaItemBox->setBtnPlay(playing);
   player_->setProgressSliderMax(static_cast<int>(player_->duration()));
   // default values of artist and title will be "Untitled" and "V/A"
   auto metadata = player_->metaData();

@@ -6,6 +6,7 @@ MediaItemBox::MediaItemBox(Player *parent) :
     ui_(new Ui::MediaItemBox){
     ui_->setupUi(this);
     player_ = parent;
+    isPlaying = false;
 
     connect(ui_->btnPlay, &QPushButton::clicked, this, &MediaItemBox::onClickPlay);
     connect(ui_->btnInfo, &QPushButton::clicked, this, &MediaItemBox::onClickBtnInfo);
@@ -45,9 +46,25 @@ void MediaItemBox::setMetaData(QMediaMetaData data){
 void MediaItemBox::setMediaUrl(const QUrl &newMedia_url){
     media_url_ = newMedia_url;
 }
+QUrl MediaItemBox::getMediaUrl(){
+    return media_url_;
+}
+
+void MediaItemBox::setActive(bool active){
+    QString color = active ? "background-color: #f8f8f8" : "";
+    this->setStyleSheet(color);
+    setBtnPlay(!isPlaying);
+}
 
 void MediaItemBox::onClickPlay(){
-    player_->setMediaUrl(media_url_);
+    qDebug()<<"onClickPlay"<<isPlaying;
+    setBtnPlay(isPlaying);
+    if(isPlaying){
+        player_->pauseMedia();
+    }else{
+        player_->setMediaUrl(media_url_);
+    }
+    isPlaying = !isPlaying;
 }
 
 void MediaItemBox::onClickBtnInfo() {
@@ -56,6 +73,7 @@ void MediaItemBox::onClickBtnInfo() {
 }
 
 void MediaItemBox::setBtnPlay(bool play) {
+    qDebug()<<"setBtnPlay"<<play;
     ui_->btnPlay->setIcon(QIcon(play ? ":/images/circle-play.svg" : ":/images/circle-pause.svg"));
 }
 

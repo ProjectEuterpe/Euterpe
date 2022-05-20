@@ -44,8 +44,6 @@ Player::Player(const QPointer<QWidget>& parent)
           this, &Player::onClickOpen);
   connect(media_player_, &QMediaPlayer::positionChanged,  //
           this, &Player::progressing);
-  connect(media_player_, &QMediaPlayer::metaDataChanged,  //
-          this, &Player::onChangeMetaData);
   //全屏部分
   connect(ui_->isfullScreen,&QPushButton::clicked,  //
           this, &Player::onClickFullScreen);
@@ -147,28 +145,7 @@ void Player::addFloatTable(QPushButton* info, QString str){
   widget->show();
 }
 
-void Player::addMediaItemBox(QMediaMetaData metaData){
-  if(metaData.isEmpty()) return;
-  MediaItemBox *widget = new MediaItemBox(this);
-  QString artist = "artist";
-  QString title = "title";
-  QVariant artistVar = metaData.value(QMediaMetaData::AlbumArtist);
-  QVariant titleVar = metaData.value(QMediaMetaData::Title);
-  if(artistVar.isNull()){
-      artist = "unknow artist";
-  } else {
-      artist = metaData.value(QMediaMetaData::AlbumArtist).toString();
-  }
-  if(titleVar.isNull()){
-      title = "unknow title";
-  } else {
-      title = metaData.value(QMediaMetaData::Title).toString();
-  }
-  widget->setMetaData(metaData);
-  widget->setMediaUrl(media_url_);
-  widget->setArtist(artist);
-  widget->setTitle(title);
-  qDebug()<<"addMediaBox"<<media_url_;
+void Player::addMediaItemBox(QWidget* widget){
   ui_->scrollMediaListLayout->insertWidget(ui_->scrollMediaListLayout->count()-1, widget);
 }
 
@@ -294,11 +271,6 @@ bool Player::eventFilter(QObject *obj, QEvent *e)
        return QWidget::eventFilter(obj,e);
 }
 
-void Player::onChangeMetaData(){
-  // 检查 media_url_ 是否存在与列表中 ？ todo
-
-  addMediaItemBox(media_player_->metaData());
-}
 
 #pragma endregion
 
@@ -336,12 +308,21 @@ void Player::updateTimeLabel(qint64 time) {
   }
 
 void Player::setMediaUrl(const QUrl &newMedia_url){
-  qDebug()<<"setMediaUrl";
-  if(newMedia_url == media_url_) return;
+  qDebug()<<"setMediaUrl"<<newMedia_url;
   media_url_ = newMedia_url;
-  media_player_->setSource(media_url_);
+  media_player_->setSource(newMedia_url);
+  setButtonLabelPlay(false);
+  media_player_->play();
 }
 
+void Player::stopMedia(){
+  setButtonLabelPlay(true);
+  media_player_->stop();
+}
 
+void Player::pauseMedia(){
+  setButtonLabelPlay(true);
+  media_player_->pause();
+}
 
 #pragma endregion

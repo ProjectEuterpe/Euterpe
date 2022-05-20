@@ -104,8 +104,20 @@
             </property>
             <item>
              <widget class="QSlider" name="progress_slider">
+              <property name="value">
+               <number>0</number>
+              </property>
+              <property name="sliderPosition">
+               <number>0</number>
+              </property>
+              <property name="tracking">
+               <bool>true</bool>
+              </property>
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="tickPosition">
+               <enum>QSlider::NoTicks</enum>
               </property>
              </widget>
             </item>
@@ -119,6 +131,15 @@
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>26</width>
+                <height>26</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">border:0;</string>
               </property>
               <property name="text">
                <string/>
@@ -508,16 +529,25 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_3">
       <property name="spacing">
-       <number>7</number>
+       <number>0</number>
+      </property>
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
       </property>
       <property name="rightMargin">
-       <number>11</number>
+       <number>0</number>
       </property>
       <property name="bottomMargin">
-       <number>11</number>
+       <number>0</number>
       </property>
       <item>
        <widget class="QGroupBox" name="group_libTitle">
+        <property name="styleSheet">
+         <string notr="true"/>
+        </property>
         <property name="title">
          <string/>
         </property>
@@ -581,6 +611,9 @@
           <height>0</height>
          </size>
         </property>
+        <property name="styleSheet">
+         <string notr="true">border:1px solid lightgrey;</string>
+        </property>
         <property name="verticalScrollBarPolicy">
          <enum>Qt::ScrollBarAlwaysOn</enum>
         </property>
@@ -601,8 +634,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>203</width>
-           <height>561</height>
+           <width>225</width>
+           <height>590</height>
           </rect>
          </property>
          <property name="minimumSize">
@@ -610,6 +643,9 @@
            <width>0</width>
            <height>0</height>
           </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true"/>
          </property>
          <layout class="QVBoxLayout" name="scrollMediaListLayout">
           <property name="spacing">
