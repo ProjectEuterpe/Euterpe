@@ -26,13 +26,15 @@
 #include <QFile>
 
 #include "Player.h"
-#include "PlayerController.h"
-#include"PlayerShortcut.h"
+#include "FloatTable.h"
+#include "PlayerShortcut.h"
+
 int main(int argc, char* argv[]) {
   auto app = QPointer<QApplication>(new QApplication(argc, argv));
   auto player = QPointer<Player>(new Player(nullptr));
   auto controller = QPointer<PlayerController>(new PlayerController(player));
-auto shortcut=QPointer<PlayerShortcut>(new PlayerShortcut(player,controller));
+  auto shortcut=QPointer<PlayerShortcut>(new PlayerShortcut(player,controller));
+
   /* read qss*/
   QString qss;
   QFile qssFile(":/qss/main.qss");

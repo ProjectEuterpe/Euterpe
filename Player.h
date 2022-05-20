@@ -27,9 +27,12 @@
 
 #include <QAudioOutput>
 #include <QMediaPlayer>
+#include <QMediaMetaData>
 #include <QPointer>
 #include <QVariant>
 #include <QWidget>
+#include <QFileDialog>
+#include <QTime>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -51,16 +54,20 @@ class Player : public QWidget {
   void setButtonLabelPlay(bool play);
   void setButtonVolume(bool volume);
   void setPlayOrderIcon(int type);
-   void setIsFullScreenIcon();
-   void changeFullScreen();
-  void addFloatTable(float x, float y, QString text);
+  void setIsFullScreenIcon();
+  void setMediaUrl(const QUrl &newMedia_url);
+  void changeFullScreen();
+  void addFloatTable(QPushButton* info, QString text);
+  void addMediaItemBox(QMediaMetaData metadata);
+  void addMediaItemSpacerV();
+
 #define nd [[nodiscard]]
   nd auto ui() const -> PlayerUiPtr;
   nd auto mediaPlayer() const -> QPointer<QMediaPlayer>;
   nd auto audioOutput() const -> QPointer<QAudioOutput>;
   nd bool rewind() const;
  // nd bool loop() const;
-   nd bool isFullScreen() const;
+  nd bool isFullScreen() const;
   nd auto duration() const -> qint64;
   nd auto totalTime() const -> qint64;
   nd auto metaData() const -> QMediaMetaData;
@@ -70,14 +77,16 @@ class Player : public QWidget {
   nd auto comboBoxRate() const -> qreal;
   nd bool endOfMedia() const;
 #undef nd
+
 signals:
   //全屏状态下，展示工具栏
-  void showBar();
- private slots:
-  void progressing(qint64 progress);
-  void onClickOpen();
-void onClickFullScreen();
-bool eventFilter(QObject *, QEvent *) override;
+ void showBar();
+private slots:
+ void progressing(qint64 progress);
+ void onClickOpen();
+ void onClickFullScreen();
+ bool eventFilter(QObject *, QEvent *) override;
+ void onChangeMetaData();
 
  private:
   void initMedia(const QUrl &url);
@@ -85,6 +94,7 @@ bool eventFilter(QObject *, QEvent *) override;
 
  private:
   PlayerUiPtr ui_;
+  QUrl media_url_;
   QPointer<QMediaPlayer> media_player_;
   QPointer<QAudioOutput> audio_output_;
   bool isfullScreen;

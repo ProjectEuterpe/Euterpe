@@ -27,6 +27,7 @@
 #include <QDockWidget>
 #include <QTextEdit>
 
+#include "MediaItemBox.h"
 #include "ui_Player.h"
 
 PlayerController::PlayerController(const QPointer<Player> &player) {
@@ -83,6 +84,9 @@ showBarTimer=new QTimer();
  connect(player_,&Player::showBar,this,&PlayerController::onTimerStart);
 #undef control_connection
   frameData=QPointer<GetFrameData>{new GetFrameData(player_)};
+
+  // 渲染媒体库列表
+  initMediaList();
 }
 //快捷键
 void PlayerController::doShortcutEvent(const char *name)
@@ -110,9 +114,17 @@ void PlayerController::setProgressValue(const int add)
      player_->mediaPlayer()->play();
 }
 
-QVariant PlayerController::getMetaMes(QMediaMetaData::Key key)
-{
-return player_->metaData().value(key);
+QVariant PlayerController::getMetaMes(QMediaMetaData::Key key){
+  return player_->metaData().value(key);
+}
+
+void PlayerController::initMediaList(){
+  player_->addMediaItemSpacerV();
+//  player_->addMediaItemBox(nullptr);
+}
+
+void PlayerController::addMediaItem(QMediaMetaData metaData){
+//  player_->addMediaItemBox(metaData);
 }
 
 #pragma region  // region: controller slots
@@ -183,7 +195,7 @@ void PlayerController::onClickInfo() {
     qDebug() << k << ":" << metadata[k];
     text += metadata.metaDataKeyToString(k) + ":" + metadata[k].toString() + '\n';
   }
-  player_->addFloatTable(0, 0, text);
+  player_->addFloatTable(player_->ui()->info, text);
   emit info();
 }
 

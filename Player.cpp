@@ -24,12 +24,9 @@
 
 #include "Player.h"
 
-#include <QFileDialog>
-#include <QMediaMetaData>
-#include <QTime>
-
 #include "ui_Player.h"
 #include "FloatTable.h"
+#include "MediaItemBox.h"
 
 Player::Player(const QPointer<QWidget>& parent)
     : QWidget(parent), ui_(new Ui::Player) {
@@ -47,6 +44,8 @@ Player::Player(const QPointer<QWidget>& parent)
           this, &Player::onClickOpen);
   connect(media_player_, &QMediaPlayer::positionChanged,  //
           this, &Player::progressing);
+  connect(media_player_, &QMediaPlayer::metaDataChanged,  //
+          this, &Player::onChangeMetaData);
   //全屏部分
   connect(ui_->isfullScreen,&QPushButton::clicked,  //
           this, &Player::onClickFullScreen);
@@ -139,18 +138,42 @@ void Player::changeFullScreen()
  }
 }
 
-
-void Player::addFloatTable(float x, float y, QString str){
+void Player::addFloatTable(QPushButton* info, QString str){
   FloatTable *widget = new FloatTable(nullptr);
   widget->setCustomText(str);
-  widget->setCustomPos(ui_->info->x() + ui_->info->width(), ui_->info->y() - 50);
-  widget->setCustomPos(ui_->info->mapToGlobal(QPoint(0,0)).x()- widget->width()/2 + ui_->info->width()/2,
-                       ui_->info->mapToGlobal(QPoint(0,0)).y() - widget->height());
+  widget->setCustomPos(info->mapToGlobal(QPoint(0,0)).x() - widget->width()/2 + info->width()/2,
+                       info->mapToGlobal(QPoint(0,0)).y() - widget->height());
   widget->setWindowFlags(Qt::Popup);
   widget->show();
 }
 
+void Player::addMediaItemBox(QMediaMetaData metaData){
+  MediaItemBox *widget = new MediaItemBox(this);
+  QString artist = "artist";
+  QString title = "title";
+  QVariant artistVar = metaData.value(QMediaMetaData::AlbumArtist);
+  QVariant titleVar = metaData.value(QMediaMetaData::Title);
+  if(artistVar.isNull()){
+      artist = "unknow artist";
+  } else {
+      artist = metaData.value(QMediaMetaData::AlbumArtist).toString();
+  }
+  if(titleVar.isNull()){
+      title = "unknow title";
+  } else {
+      title = metaData.value(QMediaMetaData::Title).toString();
+  }
+  widget->setMetaData(metaData);
+  widget->setMediaUrl(media_url_);
+  widget->setArtist(artist);
+  widget->setTitle(title);
+  qDebug()<<"addMediaBox"<<media_url_;
+  ui_->scrollMediaListLayout->insertWidget(ui_->scrollMediaListLayout->count()-1, widget);
+}
 
+void Player::addMediaItemSpacerV(){
+  ui_->scrollMediaListLayout->addSpacerItem(new QSpacerItem(20,40,QSizePolicy::Minimum,QSizePolicy::Expanding));
+}
 
 #pragma endregion
 
@@ -175,6 +198,7 @@ auto Player::duration() const -> qint64 { return media_player_->duration(); }
 auto Player::totalTime() const -> qint64 { return duration() / 1000; }
 
 auto Player::metaData() const -> QMediaMetaData {
+    qDebug()<<media_player_->metaData().isEmpty();
     return media_player_->metaData();
 }
 
@@ -219,7 +243,7 @@ void Player::progressing(qint64 progress) {
   if (!ui_->progress_slider->isSliderDown()) {
     ui_->progress_slider->setValue(static_cast<int>(progress));
   }
-  // qDebug() << progress;
+//   qDebug() << "progress";
   updateTimeLabel(progress / 1000);
 }
 
@@ -269,6 +293,12 @@ bool Player::eventFilter(QObject *obj, QEvent *e)
        return QWidget::eventFilter(obj,e);
 }
 
+void Player::onChangeMetaData(){
+  // 检查 media_url_ 是否存在与列表中 ？ todo
+
+  addMediaItemBox(media_player_->metaData());
+}
+
 #pragma endregion
 
 #pragma region  // region: private
@@ -279,6 +309,7 @@ bool Player::eventFilter(QObject *obj, QEvent *e)
  */
 void Player::initMedia(const QUrl& url) {
   qDebug() << "init media";
+  media_url_ = url;
   media_player_->setSource(url);
   // some buttons remain unavailable until a media file is loaded.
   ui_->play->setEnabled(true);
@@ -300,7 +331,16 @@ void Player::updateTimeLabel(qint64 time) {
     auto format = QString{d > 3600 ? "hh:mm:ss" : "mm:ss"};
     time_label_text = current.toString(format) + " / " + total.toString(format);
   }
-  ui_->time_label->setText(time_label_text);
+            ui_->time_label->setText(time_label_text);
+  }
+
+void Player::setMediaUrl(const QUrl &newMedia_url){
+  qDebug()<<"setMediaUrl";
+  if(newMedia_url == media_url_) return;
+  media_url_ = newMedia_url;
+  media_player_->setSource(media_url_);
 }
+
+
 
 #pragma endregion

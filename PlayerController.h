@@ -24,11 +24,11 @@
 
 #ifndef EUTERPE__PLAYERCONTROLLER_H_
 #define EUTERPE__PLAYERCONTROLLER_H_
-#include<QMediaMetaData>
+#include <QMediaMetaData>
 #include <QPointer>
-#include<QTimer>
+#include <QTimer>
 #include "Player.h"
-#include"GetFrameData.h"
+#include "GetFrameData.h"
 class PlayerController : public QWidget {
   Q_OBJECT
 
@@ -42,6 +42,11 @@ class PlayerController : public QWidget {
     //整理获取元数据
     //获取单一元数据
   QVariant getMetaMes(QMediaMetaData::Key key);
+
+  // 初始化媒体库列表
+  void initMediaList();
+  void addMediaItem(QMediaMetaData metaData);
+
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "NotImplementedFunctions"
  signals:
