@@ -17,7 +17,6 @@ class MediaItemBox : public QGroupBox
 public:
     explicit MediaItemBox(Player *parent = nullptr);
     ~MediaItemBox();
-    void setPicture(QString picture);
     void setPos(float x, float y);
     void setTitle(QString title);
     void setArtist(QString author);

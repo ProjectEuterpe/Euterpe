@@ -81,6 +81,7 @@ class PlayerController : public QWidget {
   void onTimerStart();
   void onTimerEnd();
   void onChangeMetaData();
+  void onChangeDuration();
  private:
   QPointer<Player> player_;
   enum PlayOrder { onlyOnce = 1, inOrder, randomLoop, singleLoop} playOrder = onlyOnce;

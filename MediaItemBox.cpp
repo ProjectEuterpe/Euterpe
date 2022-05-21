@@ -12,10 +12,6 @@ MediaItemBox::MediaItemBox(Player *parent) :
     connect(ui_->btnInfo, &QPushButton::clicked, this, &MediaItemBox::onClickBtnInfo);
 }
 
-void MediaItemBox::setPicture(QString picture){
-
-}
-
 void MediaItemBox::setPos(float x, float y){
 
 }

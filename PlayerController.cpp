@@ -60,8 +60,10 @@ showBarTimer=new QTimer();
   connect(ui->rate, &QComboBox::currentTextChanged, this,
           &PlayerController::onChangeRate);
 
-  connect(player_->mediaPlayer(), &QMediaPlayer::metaDataChanged,  //
+  connect(player_->mediaPlayer(), &QMediaPlayer::metaDataChanged,
           this, &PlayerController::onChangeMetaData);
+  connect(player_->mediaPlayer(), &QMediaPlayer::durationChanged,
+          this, &PlayerController::onChangeDuration);
 
   // connect signals to Qt media controllers
 #define media_control_connection(signal, slot) \
@@ -157,6 +159,7 @@ void PlayerController::addMediaItem(QMediaMetaData metaData){
 
 void PlayerController::onChangeMetaData(){
   qDebug()<<"onChangeMetaData";
+
   // 检查 media_url_ 为当前 url
   if(!curMediaItemBox.isNull()){
     if(player_->media_url_ == curMediaItemBox->getMediaUrl()) return;
@@ -172,6 +175,11 @@ void PlayerController::onChangeMetaData(){
     }
   }
   addMediaItem(player_->metaData());
+}
+
+void PlayerController::onChangeDuration(){
+  qDebug()<<"onChangeDuration";
+  player_->setProgressSliderMax(static_cast<int>(player_->duration()));
 }
 
 #pragma region  // region: controller slots
@@ -190,7 +198,7 @@ void PlayerController::onClickPlay() {
   emit playing ? pause() : play();
   player_->setButtonLabelPlay(playing);
   curMediaItemBox->setBtnPlay(playing);
-  player_->setProgressSliderMax(static_cast<int>(player_->duration()));
+//  player_->setProgressSliderMax(static_cast<int>(player_->duration()));
   // default values of artist and title will be "Untitled" and "V/A"
   auto metadata = player_->metaData();
   auto artist = metadata.value(QMediaMetaData::AlbumArtist).toString();

@@ -320,10 +320,13 @@ void Player::updateTimeLabel(qint64 time) {
 
 void Player::setMediaUrl(const QUrl &newMedia_url){
   qDebug()<<"setMediaUrl"<<newMedia_url;
-  media_url_ = newMedia_url;
-  media_player_->setSource(newMedia_url);
-  setButtonLabelPlay(false);
+  if(newMedia_url != media_url_){
+    media_url_ = newMedia_url;
+    media_player_->setSource(newMedia_url);
+  }
   media_player_->play();
+  setButtonLabelPlay(false);
+//  setProgressSliderMax(static_cast<int>(duration()));
 }
 
 void Player::stopMedia(){
