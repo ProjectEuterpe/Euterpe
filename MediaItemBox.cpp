@@ -53,7 +53,10 @@ QUrl MediaItemBox::getMediaUrl(){
 void MediaItemBox::setActive(bool active){
     QString color = active ? "background-color: #f8f8f8" : "";
     this->setStyleSheet(color);
-    setBtnPlay(!isPlaying);
+    if(!active) {
+        isPlaying = false;
+        setBtnPlay(!isPlaying);
+    }
 }
 
 void MediaItemBox::onClickPlay(){

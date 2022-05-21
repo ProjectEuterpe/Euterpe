@@ -156,10 +156,15 @@ void PlayerController::addMediaItem(QMediaMetaData metaData){
 }
 
 void PlayerController::onChangeMetaData(){
-qDebug()<<"onChangeMetaData";
+  qDebug()<<"onChangeMetaData";
+  // 检查 media_url_ 为当前 url
+  if(!curMediaItemBox.isNull()){
+    if(player_->media_url_ == curMediaItemBox->getMediaUrl()) return;
+  }
   // 检查 media_url_ 是否存在与列表中
+  qDebug()<<player_->media_url_;
   for(int i = 0, len = mediaListBox.length(); i< len;i++){
-    if(mediaListBox[i]->getMediaUrl().toString() == player_->media_url_.toString()){
+    if(mediaListBox[i]->getMediaUrl() == player_->media_url_){
         curMediaItemBox->setActive(false);
         curMediaItemBox = mediaListBox[i];
         curMediaItemBox->setActive(true);
