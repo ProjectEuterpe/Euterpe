@@ -57,7 +57,7 @@ class Player : public QWidget {
   void setIsFullScreenIcon();
   void setMediaUrl(const QUrl &newMedia_url);
   void changeFullScreen();
-  void addFloatTable(QPushButton* info, QString text);
+  void addFloatTable(QPushButton* info, QString text, int posType = 0);
   void addMediaItemBox(QWidget* widget);
   void addMediaItemSpacerV();
   void stopMedia();

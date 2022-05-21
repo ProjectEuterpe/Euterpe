@@ -23,11 +23,13 @@ void MediaItemBox::setPos(float x, float y){
 void MediaItemBox::setTitle(QString title){
     if(title == "") title = "None";
     ui_->textTitle->setText(title);
+    ui_->textTitle->setToolTip(title);
 }
 
-void MediaItemBox::setArtist(QString author){
-    if(author == "") author = "None";
-    ui_->textArtist->setText(author);
+void MediaItemBox::setArtist(QString artist){
+    if(artist == "") artist = "None";
+    ui_->textArtist->setText(artist);
+    ui_->textArtist->setToolTip(artist);
 }
 
 void MediaItemBox::setPicture(QImage img){
@@ -72,7 +74,7 @@ void MediaItemBox::onClickPlay(){
 
 void MediaItemBox::onClickBtnInfo() {
     qDebug() << "clicked: BtnInfo";
-    player_->addFloatTable(ui_->btnInfo, metadata_str_);
+    player_->addFloatTable(ui_->btnInfo, metadata_str_, 1);
 }
 
 void MediaItemBox::setBtnPlay(bool play) {

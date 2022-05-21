@@ -136,11 +136,22 @@ void Player::changeFullScreen()
  }
 }
 
-void Player::addFloatTable(QPushButton* info, QString str){
+void Player::addFloatTable(QPushButton* info, QString str, int posType){
   FloatTable *widget = new FloatTable(nullptr);
   widget->setCustomText(str);
-  widget->setCustomPos(info->mapToGlobal(QPoint(0,0)).x() - widget->width()/2 + info->width()/2,
-                       info->mapToGlobal(QPoint(0,0)).y() - widget->height());
+  switch(posType){
+    case 0:{ // 顶部
+        widget->setCustomPos(info->mapToGlobal(QPoint(0,0)).x() - widget->width()/2 + info->width()/2,
+                             info->mapToGlobal(QPoint(0,0)).y() - widget->height());
+        break;
+    };
+    case 1:{ // 右方
+        widget->setCustomPos(info->mapToGlobal(QPoint(0,0)).x() + info->width(),
+                             info->mapToGlobal(QPoint(0,0)).y() - widget->height()/2 + info->height()/2);
+        break;
+    }
+  }
+
   widget->setWindowFlags(Qt::Popup);
   widget->show();
 }

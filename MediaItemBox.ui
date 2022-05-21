@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>203</width>
+    <width>201</width>
     <height>100</height>
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
@@ -74,6 +74,24 @@
    </item>
    <item>
     <widget class="QGroupBox" name="mediaTextBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>120</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>16777215</height>
+      </size>
+     </property>
      <property name="styleSheet">
       <string notr="true">padding: 5px 10px 0px 5px;</string>
      </property>
@@ -97,34 +115,37 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QLineEdit" name="textTitle">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
+       <widget class="QLabel" name="textTitle">
         <property name="maximumSize">
          <size>
           <width>16777215</width>
-          <height>20</height>
+          <height>22</height>
          </size>
         </property>
         <property name="styleSheet">
          <string notr="true">border:0;</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="scaledContents">
+         <bool>false</bool>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="textArtist">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
+       <widget class="QLabel" name="textArtist">
         <property name="maximumSize">
          <size>
           <width>16777215</width>
-          <height>20</height>
+          <height>22</height>
          </size>
         </property>
         <property name="styleSheet">
          <string notr="true">border:0;</string>
+        </property>
+        <property name="text">
+         <string/>
         </property>
        </widget>
       </item>
