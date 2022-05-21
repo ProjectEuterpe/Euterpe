@@ -32,6 +32,10 @@
 PlayerController::PlayerController(const QPointer<Player> &player) {
   player_ = player;
   auto ui = player_->ui();
+  //快捷键
+shortcut=QPointer<Player_Shortcut>(new Player_Shortcut(player));
+connect(shortcut,&Player_Shortcut::changeVolume,this,&PlayerController::setVolumeValue);
+connect(shortcut,&Player_Shortcut::changeProgress,this,&PlayerController::setProgressValue);
 
   // connect clicks on buttons to handlers
 #define on_click_connection(sender, slot) \
@@ -44,6 +48,7 @@ PlayerController::PlayerController(const QPointer<Player> &player) {
   on_click_connection(btn_volume, onClickBtnVolume);
   on_click_connection(btn_play_order, onClickBtnPlayOrder);
 #undef on_click_connection
+
 
   // connect changes of sliders to handlers
 #define on_change_slider_connection(sender, signal, slot) \
@@ -58,6 +63,11 @@ PlayerController::PlayerController(const QPointer<Player> &player) {
           &PlayerController::onChangeRate);
   connect(ui->rate, &QComboBox::currentTextChanged, this,
           &PlayerController::onChangeRate);
+
+  connect(player_->mediaPlayer(), &QMediaPlayer::metaDataChanged,
+          this, &PlayerController::onChangeMetaData);
+  connect(player_->mediaPlayer(), &QMediaPlayer::durationChanged,
+          this, &PlayerController::onChangeDuration);
 
   // connect signals to Qt media controllers
 #define media_control_connection(signal, slot) \
@@ -85,21 +95,23 @@ PlayerController::PlayerController(const QPointer<Player> &player) {
 
 #undef control_connection
   frameData=QPointer<GetFrameData>{new GetFrameData(player_)};
+
   //帧展示
   connect(frameData,&GetFrameData::doneGetFrame,this,&PlayerController::showFrameData);
-  connect(player_->ui()->progress_slider,&ProgressSlider::onDoubleClick,this,&PlayerController::onProgressDoubleClick);
+  connect(player_->ui()->progress_slider,&ProgressSlider::onMouseMove,this,&PlayerController::onProgressMouseOn);
 //计算关闭帧
   showFrameTimer=QPointer<QTimer>{new QTimer()};
   showFrameTimer->setSingleShot(true);
 connect(showFrameTimer,&QTimer::timeout,player_,&Player::closeFrameShow);
+
+  // 渲染媒体库列表
+  initMediaList();
+  //音视频播放切换
+  connect(player_->mediaPlayer(),&QMediaPlayer::sourceChanged,this,&PlayerController::checkUrl);
+
 }
 
 //快捷键使用
-void PlayerController::doShortcutEvent(const char *name)
-{qDebug()<<"shortcut:"<<name;
-QMetaObject::invokeMethod(this,name,Qt::DirectConnection);
-}
-
 void PlayerController::setVolumeValue(const int add)
 {qDebug()<<"shortcut:changeVolum";
     float nowVolume=player_->ui()->volume_slider->value();
@@ -123,10 +135,100 @@ void PlayerController::setProgressValue(const int add)
      player_->mediaPlayer()->play();
 }
 
-QVariant PlayerController::getMetaMes(QMediaMetaData::Key key)
-{
-return player_->metaData().value(key);
+QVariant PlayerController::getMetaMes(QMediaMetaData::Key key){
+  return player_->metaData().value(key);
 }
+
+void PlayerController::initMediaList(){
+  player_->addMediaItemSpacerV();
+//  player_->addMediaItemBox(nullptr);
+}
+//音视频控制
+void PlayerController::checkUrl()
+{ //貌似没有值，待实现
+    QString type=getMetaMes(QMediaMetaData::MediaType).toString();
+    qDebug()<<type;
+
+        playVideo();
+
+     if(type=="audio")
+    {
+        playAudio();
+    }
+     else playVideo();
+}
+void PlayerController::playVideo()
+{qDebug()<<"play video";
+shortcut->playVideo();
+player_->ui()->progress_slider->setIsVideo(true);
+frameData->setIsVideo(true);
+}
+void PlayerController::playAudio()
+{qDebug()<<"play audio";
+    //取消帧相关快捷键
+    shortcut->playAudio();
+   player_->ui()->progress_slider->setIsVideo(false);
+   frameData->setIsVideo(false);
+   //专辑图片展示
+   QImage image=getMetaMes(QMediaMetaData::CoverArtImage).value<QImage>();
+   QPalette palette;
+   palette.setBrush(this->backgroundRole(),QBrush(image));
+   player_->ui()->video_widget->setPalette(palette);
+}
+void PlayerController::addMediaItem(QMediaMetaData metaData){
+  if(metaData.isEmpty()) return;
+  MediaItemBox *widget = new MediaItemBox(player_.get());
+  QString artist = "artist";
+  QString title = "title";
+  QVariant artistVar = metaData.value(QMediaMetaData::AlbumArtist);
+  QVariant titleVar = metaData.value(QMediaMetaData::Title);
+  if(artistVar.isNull()){
+      artist = "unknow artist";
+  } else {
+      artist = artistVar.toString();
+  }
+  if(titleVar.isNull()){
+      title = "unknow title";
+  } else {
+      title = titleVar.toString();
+  }
+  widget->setMetaData(metaData);
+  widget->setArtist(artist);
+  widget->setTitle(title);
+  widget->setMediaUrl(player_->media_url_);
+  player_->addMediaItemBox(widget);
+
+  if(!curMediaItemBox.isNull()) curMediaItemBox->setActive(false);
+  curMediaItemBox = widget;
+  curMediaItemBox->setActive(true);
+  mediaListBox.append(widget);
+}
+
+void PlayerController::onChangeMetaData(){
+  qDebug()<<"onChangeMetaData";
+
+  // 检查 media_url_ 为当前 url
+  if(!curMediaItemBox.isNull()){
+    if(player_->media_url_ == curMediaItemBox->getMediaUrl()) return;
+  }
+  // 检查 media_url_ 是否存在与列表中
+  qDebug()<<player_->media_url_;
+  for(int i = 0, len = mediaListBox.length(); i< len;i++){
+    if(mediaListBox[i]->getMediaUrl() == player_->media_url_){
+        curMediaItemBox->setActive(false);
+        curMediaItemBox = mediaListBox[i];
+        curMediaItemBox->setActive(true);
+        return;
+    }
+  }
+  addMediaItem(player_->metaData());
+}
+
+void PlayerController::onChangeDuration(){
+  qDebug()<<"onChangeDuration";
+  player_->setProgressSliderMax(static_cast<int>(player_->duration()));
+}
+
 
 #pragma region  // region: controller slots
 
@@ -143,7 +245,8 @@ void PlayerController::onClickPlay() {
   bool playing = player_->state() == QMediaPlayer::PlayingState;
   emit playing ? pause() : play();
   player_->setButtonLabelPlay(playing);
-  player_->setProgressSliderMax(static_cast<int>(player_->duration()));
+  curMediaItemBox->setBtnPlay(playing);
+//  player_->setProgressSliderMax(static_cast<int>(player_->duration()));
   // default values of artist and title will be "Untitled" and "V/A"
   auto metadata = player_->metaData();
   auto artist = metadata.value(QMediaMetaData::AlbumArtist).toString();
@@ -196,7 +299,7 @@ void PlayerController::onClickInfo() {
     qDebug() << k << ":" << metadata[k];
     text += metadata.metaDataKeyToString(k) + ":" + metadata[k].toString() + '\n';
   }
-  player_->addFloatTable(0, 0, text);
+  player_->addFloatTable(player_->ui()->info, text);
   emit info();
 }
 
@@ -265,11 +368,13 @@ player_->ui()->control_pad->setHidden(true);
     showBarTimer->stop();
 }
 
-void PlayerController::onProgressDoubleClick(const double per)
+
+
+void PlayerController::onProgressMouseOn(const double per)
 {
     //获取目标时间
  int target=per*getMetaMes(QMediaMetaData::Duration).toInt();
- qDebug()<<"Double Click time:"<<target;
+ qDebug()<<"hover time:"<<target;
  player_->setFramePos(per);
  frameData->GetTargetFrameImage(target);
 

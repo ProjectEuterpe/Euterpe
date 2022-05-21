@@ -27,10 +27,17 @@
 
 #include <QAudioOutput>
 #include <QMediaPlayer>
+#include <QMediaMetaData>
 #include <QPointer>
 #include <QVariant>
 #include <QWidget>
+
 #include "FloatTable.h"
+
+#include <QFileDialog>
+#include <QTime>
+
+
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class Player;
@@ -51,19 +58,27 @@ class Player : public QWidget {
   void setButtonLabelPlay(bool play);
   void setButtonVolume(bool volume);
   void setPlayOrderIcon(int type);
+
    void setIsFullScreenIcon();
    void changeFullScreen();
   void addFloatTable(float x, float y, QString text);
   //展示帧图相关
   void setFrame(QImage image);
   void setFramePos(float x);
+  void setMediaUrl(const QUrl &newMedia_url);
+  void addFloatTable(QPushButton* info, QString text, int posType = 0);
+  void addMediaItemBox(QWidget* widget);
+  void addMediaItemSpacerV();
+  void stopMedia();
+  void pauseMedia();
+
 #define nd [[nodiscard]]
   nd auto ui() const -> PlayerUiPtr;
   nd auto mediaPlayer() const -> QPointer<QMediaPlayer>;
   nd auto audioOutput() const -> QPointer<QAudioOutput>;
   nd bool rewind() const;
  // nd bool loop() const;
-   nd bool isFullScreen() const;
+  nd bool isFullScreen() const;
   nd auto duration() const -> qint64;
   nd auto totalTime() const -> qint64;
   nd auto metaData() const -> QMediaMetaData;
@@ -76,14 +91,15 @@ public slots:
   //定时关闭展示的frame
   void closeFrameShow();
 #undef nd
+
 signals:
   //全屏状态下，展示工具栏
-  void showBar();
- private slots:
-  void progressing(qint64 progress);
-  void onClickOpen();
-void onClickFullScreen();
-bool eventFilter(QObject *, QEvent *) override;
+ void showBar();
+private slots:
+ void progressing(qint64 progress);
+ void onClickOpen();
+ void onClickFullScreen();
+ bool eventFilter(QObject *, QEvent *) override;
 
  private:
   void initMedia(const QUrl &url);
@@ -94,6 +110,10 @@ bool eventFilter(QObject *, QEvent *) override;
   QPointer<QAudioOutput> audio_output_;
   bool isfullScreen;
  QPointer<FloatTable>frame;
+
+ public:
+  QUrl media_url_;
+
 };
 
 #endif  // EUTERPE__PLAYER_H_

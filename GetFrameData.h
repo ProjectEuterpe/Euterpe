@@ -14,6 +14,7 @@ QPointer<QMediaPlayer>media_player;
  qint64 timeRange;//视频帧间隔
 QImage image;
 bool done;
+bool isVideo;
 void ReloadFrameData(const QVideoFrame &nowFrame);
   int GetNowFrameNum(qint64 time);
   void resetFrameList(const QUrl &);
@@ -26,7 +27,7 @@ public:
   QImage GetFrame();
   //now指当前时间，add指添加帧数
   qint64 GetTargetFrameTime(qint64 now,int add);
-
+ void setIsVideo(bool);
 };
 
 #endif // GETFRAMEDATA_H

@@ -127,7 +127,7 @@
                <string/>
               </property>
               <property name="icon">
-               <iconset resource="res.qrc">
+               <iconset>
                 <normaloff>:/images/screen-full.svg</normaloff>:/images/screen-full.svg</iconset>
               </property>
              </widget>
@@ -206,7 +206,7 @@
                <string extracomment="播放方式"/>
               </property>
               <property name="icon">
-               <iconset resource="res.qrc">
+               <iconset>
                 <normaloff>:/images/play-onlyOnce.svg</normaloff>:/images/play-onlyOnce.svg</iconset>
               </property>
               <property name="iconSize">
@@ -223,7 +223,7 @@
                <string/>
               </property>
               <property name="icon">
-               <iconset resource="res.qrc">
+               <iconset>
                 <normaloff>:/images/rewind-play.svg</normaloff>:/images/rewind-play.svg</iconset>
               </property>
              </widget>
@@ -249,7 +249,7 @@
                <string/>
               </property>
               <property name="icon">
-               <iconset resource="res.qrc">
+               <iconset>
                 <normaloff>:/images/step-previous.svg</normaloff>:/images/step-previous.svg</iconset>
               </property>
               <property name="iconSize">
@@ -290,7 +290,7 @@
                <string/>
               </property>
               <property name="icon">
-               <iconset theme="playAndpause" resource="res.qrc">
+               <iconset theme="playAndpause">
                 <normaloff>:/images/circle-play.svg</normaloff>:/images/circle-play.svg</iconset>
               </property>
               <property name="iconSize">
@@ -322,7 +322,7 @@
                <string/>
               </property>
               <property name="icon">
-               <iconset resource="res.qrc">
+               <iconset>
                 <normaloff>:/images/step-next.svg</normaloff>:/images/step-next.svg</iconset>
               </property>
               <property name="iconSize">
@@ -370,7 +370,7 @@
                <string/>
               </property>
               <property name="icon">
-               <iconset resource="res.qrc">
+               <iconset>
                 <normaloff>:/images/media-info.svg</normaloff>:/images/media-info.svg</iconset>
               </property>
               <property name="iconSize">
@@ -412,7 +412,7 @@
                <string/>
               </property>
               <property name="icon">
-               <iconset resource="res.qrc">
+               <iconset>
                 <normaloff>:/images/volume-open.svg</normaloff>:/images/volume-open.svg</iconset>
               </property>
               <property name="iconSize">
@@ -562,7 +562,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="res.qrc">
+            <iconset>
              <normaloff>:/images/file-import.svg</normaloff>:/images/file-import.svg</iconset>
            </property>
            <property name="iconSize">
@@ -587,7 +587,7 @@
         <property name="widgetResizable">
          <bool>true</bool>
         </property>
-        <widget class="QWidget" name="scrollAreaWidgetContents">
+        <widget class="QWidget" name="scrollMediaList">
          <property name="geometry">
           <rect>
            <x>0</x>
@@ -596,6 +596,7 @@
            <height>547</height>
           </rect>
          </property>
+         <layout class="QVBoxLayout" name="scrollMediaListLayout"/>
         </widget>
        </widget>
       </item>
@@ -617,8 +618,6 @@
    <header location="global">ProgressSlider.h</header>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="res.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

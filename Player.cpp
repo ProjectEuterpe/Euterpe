@@ -23,12 +23,15 @@
  */
 
 #include "Player.h"
+
 #include"ProgressSlider.h"
 #include <QFileDialog>
 #include <QMediaMetaData>
 #include <QTime>
 
 #include "ui_Player.h"
+#include "FloatTable.h"
+#include "MediaItemBox.h"
 
 
 Player::Player(const QPointer<QWidget>& parent)
@@ -140,16 +143,26 @@ void Player::changeFullScreen()
  }
 }
 
-
-void Player::addFloatTable(float x, float y, QString str){
+void Player::addFloatTable(QPushButton* info, QString str, int posType){
   FloatTable *widget = new FloatTable(nullptr);
   widget->setCustomText(str);
-  widget->setCustomPos(ui_->info->x() + ui_->info->width(), ui_->info->y() - 50);
-  widget->setCustomPos(ui_->info->mapToGlobal(QPoint(0,0)).x()- widget->width()/2 + ui_->info->width()/2,
-                       ui_->info->mapToGlobal(QPoint(0,0)).y() - widget->height());
+  switch(posType){
+    case 0:{ // 顶部
+        widget->setCustomPos(info->mapToGlobal(QPoint(0,0)).x() - widget->width()/2 + info->width()/2,
+                             info->mapToGlobal(QPoint(0,0)).y() - widget->height());
+        break;
+    };
+    case 1:{ // 右方
+        widget->setCustomPos(info->mapToGlobal(QPoint(0,0)).x() + info->width(),
+                             info->mapToGlobal(QPoint(0,0)).y() - widget->height()/2 + info->height()/2);
+        break;
+    }
+  }
+
   widget->setWindowFlags(Qt::Popup);
   widget->show();
 }
+
 
 void Player::setFrame(QImage image)
 { qDebug()<<"set frame";
@@ -174,6 +187,14 @@ void Player::closeFrameShow()
 }
 
 
+void Player::addMediaItemBox(QWidget* widget){
+  ui_->scrollMediaListLayout->insertWidget(ui_->scrollMediaListLayout->count()-1, widget);
+}
+
+
+void Player::addMediaItemSpacerV(){
+  ui_->scrollMediaListLayout->addSpacerItem(new QSpacerItem(20,40,QSizePolicy::Minimum,QSizePolicy::Expanding));
+}
 
 #pragma endregion
 
@@ -198,6 +219,7 @@ auto Player::duration() const -> qint64 { return media_player_->duration(); }
 auto Player::totalTime() const -> qint64 { return duration() / 1000; }
 
 auto Player::metaData() const -> QMediaMetaData {
+    qDebug()<<media_player_->metaData().isEmpty();
     return media_player_->metaData();
 }
 
@@ -244,7 +266,11 @@ void Player::progressing(qint64 progress) {
   if (!ui_->progress_slider->isSliderDown()) {
     ui_->progress_slider->setValue(static_cast<int>(progress));
   }
+
    //qDebug() << progress;
+
+//   qDebug() << "progress";
+
   updateTimeLabel(progress / 1000);
 }
 
@@ -290,9 +316,11 @@ bool Player::eventFilter(QObject *obj, QEvent *e)
            }
    }
 
+
    // 事件交给上层对话框进行处理
        return QWidget::eventFilter(obj,e);
 }
+
 
 #pragma endregion
 
@@ -304,6 +332,7 @@ bool Player::eventFilter(QObject *obj, QEvent *e)
  */
 void Player::initMedia(const QUrl& url) {
   qDebug() << "init media";
+  media_url_ = url;
   media_player_->setSource(url);
   // some buttons remain unavailable until a media file is loaded.
   ui_->play->setEnabled(true);
@@ -325,7 +354,28 @@ void Player::updateTimeLabel(qint64 time) {
     auto format = QString{d > 3600 ? "hh:mm:ss" : "mm:ss"};
     time_label_text = current.toString(format) + " / " + total.toString(format);
   }
-  ui_->time_label->setText(time_label_text);
+            ui_->time_label->setText(time_label_text);
+  }
+
+void Player::setMediaUrl(const QUrl &newMedia_url){
+  qDebug()<<"setMediaUrl"<<newMedia_url;
+  if(newMedia_url != media_url_){
+    media_url_ = newMedia_url;
+    media_player_->setSource(newMedia_url);
+  }
+  media_player_->play();
+  setButtonLabelPlay(false);
+//  setProgressSliderMax(static_cast<int>(duration()));
+}
+
+void Player::stopMedia(){
+  setButtonLabelPlay(true);
+  media_player_->stop();
+}
+
+void Player::pauseMedia(){
+  setButtonLabelPlay(true);
+  media_player_->pause();
 }
 
 #pragma endregion

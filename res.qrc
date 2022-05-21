@@ -18,5 +18,6 @@
         <file>images/step-previous.svg</file>
         <file>images/screen-common.svg</file>
         <file>images/screen-full.svg</file>
+        <file>images/circle-progress.svg</file>
     </qresource>
 </RCC>

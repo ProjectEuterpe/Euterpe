@@ -24,24 +24,29 @@
 
 #ifndef EUTERPE__PLAYERCONTROLLER_H_
 #define EUTERPE__PLAYERCONTROLLER_H_
-#include<QMediaMetaData>
+#include <QMediaMetaData>
 #include <QPointer>
-#include<QTimer>
+#include <QTimer>
+
 #include "Player.h"
-#include"GetFrameData.h"
+#include "MediaItemBox.h"
+#include "GetFrameData.h"
+#include"Player_Shortcut.h"
 class PlayerController : public QWidget {
   Q_OBJECT
 
  public:
   explicit PlayerController(const QPointer<Player> &player);
   ~PlayerController() override = default;
-   //快捷键使用部分
-    void doShortcutEvent(const char*name);
-    void setVolumeValue(const int add);
-    void setProgressValue(const int add);
+
     //整理获取元数据
     //获取单一元数据
   QVariant getMetaMes(QMediaMetaData::Key key);
+
+  // 初始化媒体库列表
+  void initMediaList();
+  void addMediaItem(QMediaMetaData metaData);
+
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "NotImplementedFunctions"
  signals:
@@ -56,6 +61,7 @@ class PlayerController : public QWidget {
   void changeRate(qreal rate);
   void changeProgress(qint64 progress);
   void changeVolume(float volume);
+
 #pragma clang diagnostic pop
 
  private slots:
@@ -72,11 +78,21 @@ class PlayerController : public QWidget {
   void atEnd();
   void onTimerStart();
   void onTimerEnd();
-  //进度条双击处理，实现帧图展现
-  void onProgressDoubleClick(const double);
+  //查看url是视频还是音频
+  void checkUrl();
+  //进度条实现帧图展现
+  void onProgressMouseOn(const double);
     void showFrameData(QImage image);
+    //快捷键使用部分
+     void setVolumeValue(const int add);
+     void setProgressValue(const int add);
+  void onChangeMetaData();
+  void onChangeDuration();
 
  private:
+  //音视频控制
+  void playVideo();
+  void playAudio();
   QPointer<Player> player_;
   enum PlayOrder { onlyOnce = 1, inOrder, randomLoop, singleLoop} playOrder = onlyOnce;
   //鼠标不移动，计时5秒
@@ -84,6 +100,9 @@ QPointer<QTimer>showBarTimer;
 //计时300ms，关闭展示的Frame
 QPointer<QTimer>showFrameTimer;
 QPointer<GetFrameData>frameData;
+  QPointer<MediaItemBox> curMediaItemBox;
+  QList<QPointer<MediaItemBox>> mediaListBox;
+QPointer<Player_Shortcut>shortcut;
 };
 
 #endif  // EUTERPE__PLAYERCONTROLLER_H_
