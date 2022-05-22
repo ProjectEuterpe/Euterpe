@@ -89,6 +89,7 @@ void Player::setLoopLock(bool lock) {
  */
 void Player::setProgressSliderMax(int max) {
   ui_->progress_slider->setMaximum(max);
+  qDebug()<<ui_->progress_slider->value()<<ui_->progress_slider->maximum();
 }
 
 /**
@@ -191,6 +192,10 @@ void Player::addMediaItemBox(QWidget* widget){
   ui_->scrollMediaListLayout->insertWidget(ui_->scrollMediaListLayout->count()-1, widget);
 }
 
+void Player::deleteMediaItemBox(QWidget* widget){
+  widget->setParent(nullptr);
+  ui_->scrollMediaListLayout->removeWidget(widget);
+}
 
 void Player::addMediaItemSpacerV(){
   ui_->scrollMediaListLayout->addSpacerItem(new QSpacerItem(20,40,QSizePolicy::Minimum,QSizePolicy::Expanding));
@@ -287,7 +292,8 @@ void Player::onClickOpen() {
   file_dialog.setWindowTitle(tr("Open File"));
   if (file_dialog.exec() == QDialog::Accepted) {
     qDebug() << "open: accepted, " << file_dialog.selectedUrls();
-    initMedia(file_dialog.selectedUrls()[0]);
+    if(media_url_.isEmpty()) initMedia(file_dialog.selectedUrls()[0]);
+    else emit addMedia(file_dialog.selectedUrls()[0]);
   } else {
     qDebug() << "open: rejected";
   }
@@ -334,10 +340,11 @@ void Player::initMedia(const QUrl& url) {
   qDebug() << "init media";
   media_url_ = url;
   media_player_->setSource(url);
-  // some buttons remain unavailable until a media file is loaded.
+//  some buttons remain unavailable until a media file is loaded.
   ui_->play->setEnabled(true);
   ui_->stop->setEnabled(true);
   setButtonLabelPlay(true);
+  emit addMedia(url);
 }
 
 /**
@@ -363,9 +370,12 @@ void Player::setMediaUrl(const QUrl &newMedia_url){
     media_url_ = newMedia_url;
     media_player_->setSource(newMedia_url);
   }
-  media_player_->play();
+  playMedia();
+}
+
+void Player::playMedia(){
   setButtonLabelPlay(false);
-//  setProgressSliderMax(static_cast<int>(duration()));
+  media_player_->play();
 }
 
 void Player::stopMedia(){

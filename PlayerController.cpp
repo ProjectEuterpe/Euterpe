@@ -46,7 +46,6 @@ connect(shortcut,&Player_Shortcut::changeProgress,this,&PlayerController::setPro
   on_click_connection(stop, onClickStop);
   on_click_connection(info, onClickInfo);
   on_click_connection(btn_volume, onClickBtnVolume);
-  on_click_connection(btn_play_order, onClickBtnPlayOrder);
 #undef on_click_connection
 
 
@@ -104,9 +103,22 @@ connect(shortcut,&Player_Shortcut::changeProgress,this,&PlayerController::setPro
   showFrameTimer->setSingleShot(true);
 connect(showFrameTimer,&QTimer::timeout,player_,&Player::closeFrameShow);
 
-  // 渲染媒体库列表
+
+  // 初始化媒体库列表
   initMediaList();
-  //音视频播放切换
+
+  // 新导入媒体 addMedia
+  connect(player_,&Player::addMedia,this,&PlayerController::addMediaItem);
+  // 切换媒体
+  connect(mediaList,&MediaList::changeCurrMedia,this,&PlayerController::onChangeCurrMedia);
+  // 播放暂停
+  connect(mediaList,&MediaList::play,player_,&Player::playMedia);
+  connect(mediaList,&MediaList::pause,player_,&Player::pauseMedia);
+  connect(mediaList,&MediaList::stop,player_,&Player::stopMedia);
+  // 播放顺序控制
+  connect(ui->btn_play_order,&QPushButton::clicked,mediaList,&MediaList::onChangePlayOrder);
+
+  // 音视频列表播放切换
   connect(player_->mediaPlayer(),&QMediaPlayer::sourceChanged,this,&PlayerController::checkUrl);
 
 }
@@ -141,11 +153,12 @@ QVariant PlayerController::getMetaMes(QMediaMetaData::Key key){
 
 void PlayerController::initMediaList(){
   player_->addMediaItemSpacerV();
-//  player_->addMediaItemBox(nullptr);
+  mediaList = QPointer<MediaList>{new MediaList(player_)};
 }
 //音视频控制
 void PlayerController::checkUrl()
 { //貌似没有值，待实现
+
     QString type=getMetaMes(QMediaMetaData::MediaType).toString();
     qDebug()<<type;
 
@@ -175,53 +188,13 @@ void PlayerController::playAudio()
    palette.setBrush(this->backgroundRole(),QBrush(image));
    player_->ui()->video_widget->setPalette(palette);
 }
-void PlayerController::addMediaItem(QMediaMetaData metaData){
-  if(metaData.isEmpty()) return;
-  MediaItemBox *widget = new MediaItemBox(player_.get());
-  QString artist = "artist";
-  QString title = "title";
-  QVariant artistVar = metaData.value(QMediaMetaData::AlbumArtist);
-  QVariant titleVar = metaData.value(QMediaMetaData::Title);
-  if(artistVar.isNull()){
-      artist = "unknow artist";
-  } else {
-      artist = artistVar.toString();
-  }
-  if(titleVar.isNull()){
-      title = "unknow title";
-  } else {
-      title = titleVar.toString();
-  }
-  widget->setMetaData(metaData);
-  widget->setArtist(artist);
-  widget->setTitle(title);
-  widget->setMediaUrl(player_->media_url_);
-  player_->addMediaItemBox(widget);
-
-  if(!curMediaItemBox.isNull()) curMediaItemBox->setActive(false);
-  curMediaItemBox = widget;
-  curMediaItemBox->setActive(true);
-  mediaListBox.append(widget);
+void PlayerController::addMediaItem(QUrl url){
+  if(url.isEmpty()) return;
+  mediaList->addMediaItem(url);
 }
 
 void PlayerController::onChangeMetaData(){
   qDebug()<<"onChangeMetaData";
-
-  // 检查 media_url_ 为当前 url
-  if(!curMediaItemBox.isNull()){
-    if(player_->media_url_ == curMediaItemBox->getMediaUrl()) return;
-  }
-  // 检查 media_url_ 是否存在与列表中
-  qDebug()<<player_->media_url_;
-  for(int i = 0, len = mediaListBox.length(); i< len;i++){
-    if(mediaListBox[i]->getMediaUrl() == player_->media_url_){
-        curMediaItemBox->setActive(false);
-        curMediaItemBox = mediaListBox[i];
-        curMediaItemBox->setActive(true);
-        return;
-    }
-  }
-  addMediaItem(player_->metaData());
 }
 
 void PlayerController::onChangeDuration(){
@@ -243,10 +216,10 @@ void PlayerController::onChangeDuration(){
 void PlayerController::onClickPlay() {
   qDebug() << "clicked: play";
   bool playing = player_->state() == QMediaPlayer::PlayingState;
+  qDebug() << !playing;
   emit playing ? pause() : play();
   player_->setButtonLabelPlay(playing);
-  curMediaItemBox->setBtnPlay(playing);
-//  player_->setProgressSliderMax(static_cast<int>(player_->duration()));
+  playing ? mediaList->playCurrMedia() : mediaList->stopCurrMedia();
   // default values of artist and title will be "Untitled" and "V/A"
   auto metadata = player_->metaData();
   auto artist = metadata.value(QMediaMetaData::AlbumArtist).toString();
@@ -347,9 +320,7 @@ void PlayerController::atEnd() {
     qDebug() << "end of media";
 //    emit player_->loop() ? play() : stop();
 //    player_->setButtonLabelPlay(!player_->loop());
-    bool continuePlay = playOrder!= onlyOnce;
-    emit continuePlay ? play() : stop();
-    player_->setButtonLabelPlay(!continuePlay);
+    mediaList->onNextMedia();
   }
 }
 
@@ -387,8 +358,6 @@ showFrameTimer->start(1500);
 }
 
 
-
-
 /**
  * @brief Handler called when the value of `btn_volume` button is clicked.
  * It set the volume 0 or previous value.
@@ -405,36 +374,8 @@ void PlayerController::onClickBtnVolume(){
   }
 }
 
-void PlayerController::onClickBtnPlayOrder(){
-  switch(playOrder){
-    case onlyOnce:{
-      qDebug() << "clicked: btn_play_order change to play onlyOnce";
-      playOrder = inOrder;
-      player_->setPlayOrderIcon(1);
-      break;
-    };
-    case inOrder:{
-      qDebug() << "clicked: btn_play_order change to play randomLoop";
-      playOrder = randomLoop;
-      player_->setPlayOrderIcon(2);
-      break;
-    };
-    case randomLoop:{
-      qDebug() << "clicked: btn_play_order change to play singleLoop";
-      playOrder = singleLoop;
-      player_->setPlayOrderIcon(3);
-      break;
-    };
-    case singleLoop:{
-      qDebug() << "clicked: btn_play_order change to play onlyOnce";
-      playOrder = onlyOnce;
-      player_->setPlayOrderIcon(0);
-      break;
-    };
-    default:{
-      qDebug() << "error!!";
-    };
-  }
+void PlayerController::onChangeCurrMedia(QUrl url){
+    player_->setMediaUrl(url);
 }
 
 #pragma endregion

@@ -32,6 +32,9 @@
    <string>Euterpe</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <property name="horizontalSpacing">
+    <number>0</number>
+   </property>
    <item row="0" column="1">
     <widget class="QGroupBox" name="group_play">
      <property name="minimumSize">
@@ -123,11 +126,20 @@
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
+              <property name="maximumSize">
+               <size>
+                <width>26</width>
+                <height>26</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">border:0;</string>
+              </property>
               <property name="text">
                <string/>
               </property>
               <property name="icon">
-               <iconset>
+               <iconset resource="res.qrc">
                 <normaloff>:/images/screen-full.svg</normaloff>:/images/screen-full.svg</iconset>
               </property>
              </widget>
@@ -206,7 +218,7 @@
                <string extracomment="播放方式"/>
               </property>
               <property name="icon">
-               <iconset>
+               <iconset resource="res.qrc">
                 <normaloff>:/images/play-onlyOnce.svg</normaloff>:/images/play-onlyOnce.svg</iconset>
               </property>
               <property name="iconSize">
@@ -223,7 +235,7 @@
                <string/>
               </property>
               <property name="icon">
-               <iconset>
+               <iconset resource="res.qrc">
                 <normaloff>:/images/rewind-play.svg</normaloff>:/images/rewind-play.svg</iconset>
               </property>
              </widget>
@@ -249,7 +261,7 @@
                <string/>
               </property>
               <property name="icon">
-               <iconset>
+               <iconset resource="res.qrc">
                 <normaloff>:/images/step-previous.svg</normaloff>:/images/step-previous.svg</iconset>
               </property>
               <property name="iconSize">
@@ -290,7 +302,7 @@
                <string/>
               </property>
               <property name="icon">
-               <iconset theme="playAndpause">
+               <iconset theme="playAndpause" resource="res.qrc">
                 <normaloff>:/images/circle-play.svg</normaloff>:/images/circle-play.svg</iconset>
               </property>
               <property name="iconSize">
@@ -322,7 +334,7 @@
                <string/>
               </property>
               <property name="icon">
-               <iconset>
+               <iconset resource="res.qrc">
                 <normaloff>:/images/step-next.svg</normaloff>:/images/step-next.svg</iconset>
               </property>
               <property name="iconSize">
@@ -370,7 +382,7 @@
                <string/>
               </property>
               <property name="icon">
-               <iconset>
+               <iconset resource="res.qrc">
                 <normaloff>:/images/media-info.svg</normaloff>:/images/media-info.svg</iconset>
               </property>
               <property name="iconSize">
@@ -412,7 +424,7 @@
                <string/>
               </property>
               <property name="icon">
-               <iconset>
+               <iconset resource="res.qrc">
                 <normaloff>:/images/volume-open.svg</normaloff>:/images/volume-open.svg</iconset>
               </property>
               <property name="iconSize">
@@ -511,13 +523,19 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_3">
       <property name="spacing">
-       <number>7</number>
+       <number>2</number>
+      </property>
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
       </property>
       <property name="rightMargin">
-       <number>11</number>
+       <number>0</number>
       </property>
       <property name="bottomMargin">
-       <number>11</number>
+       <number>0</number>
       </property>
       <item>
        <widget class="QGroupBox" name="group_libTitle">
@@ -562,7 +580,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset>
+            <iconset resource="res.qrc">
              <normaloff>:/images/file-import.svg</normaloff>:/images/file-import.svg</iconset>
            </property>
            <property name="iconSize">
@@ -592,11 +610,27 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>220</width>
-           <height>547</height>
+           <width>246</width>
+           <height>588</height>
           </rect>
          </property>
-         <layout class="QVBoxLayout" name="scrollMediaListLayout"/>
+         <layout class="QVBoxLayout" name="scrollMediaListLayout">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+         </layout>
         </widget>
        </widget>
       </item>
@@ -618,6 +652,8 @@
    <header location="global">ProgressSlider.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="res.qrc"/>
+ </resources>
  <connections/>
 </ui>

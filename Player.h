@@ -68,9 +68,8 @@ class Player : public QWidget {
   void setMediaUrl(const QUrl &newMedia_url);
   void addFloatTable(QPushButton* info, QString text, int posType = 0);
   void addMediaItemBox(QWidget* widget);
+  void deleteMediaItemBox(QWidget* widget);
   void addMediaItemSpacerV();
-  void stopMedia();
-  void pauseMedia();
 
 #define nd [[nodiscard]]
   nd auto ui() const -> PlayerUiPtr;
@@ -90,11 +89,16 @@ class Player : public QWidget {
 public slots:
   //定时关闭展示的frame
   void closeFrameShow();
+  void playMedia();
+  void stopMedia();
+  void pauseMedia();
 #undef nd
 
 signals:
   //全屏状态下，展示工具栏
  void showBar();
+ // 导入媒体
+ void addMedia(QUrl url);
 private slots:
  void progressing(qint64 progress);
  void onClickOpen();

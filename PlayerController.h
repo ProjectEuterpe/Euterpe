@@ -30,6 +30,7 @@
 
 #include "Player.h"
 #include "MediaItemBox.h"
+#include "MediaList.h"
 #include "GetFrameData.h"
 #include"Player_Shortcut.h"
 class PlayerController : public QWidget {
@@ -45,7 +46,7 @@ class PlayerController : public QWidget {
 
   // 初始化媒体库列表
   void initMediaList();
-  void addMediaItem(QMediaMetaData metaData);
+  void addMediaItem(QUrl url);
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "NotImplementedFunctions"
@@ -74,7 +75,6 @@ class PlayerController : public QWidget {
   void onChangeVolume();
   void onChangeRate();
   void onClickBtnVolume();
-  void onClickBtnPlayOrder();
   void atEnd();
   void onTimerStart();
   void onTimerEnd();
@@ -88,21 +88,21 @@ class PlayerController : public QWidget {
      void setProgressValue(const int add);
   void onChangeMetaData();
   void onChangeDuration();
+  void onChangeCurrMedia(QUrl url);
 
  private:
   //音视频控制
   void playVideo();
   void playAudio();
   QPointer<Player> player_;
-  enum PlayOrder { onlyOnce = 1, inOrder, randomLoop, singleLoop} playOrder = onlyOnce;
   //鼠标不移动，计时5秒
-QPointer<QTimer>showBarTimer;
-//计时300ms，关闭展示的Frame
-QPointer<QTimer>showFrameTimer;
-QPointer<GetFrameData>frameData;
+  QPointer<QTimer>showBarTimer;
+  //计时300ms，关闭展示的Frame
+  QPointer<QTimer>showFrameTimer;
+  QPointer<GetFrameData>frameData;
   QPointer<MediaItemBox> curMediaItemBox;
-  QList<QPointer<MediaItemBox>> mediaListBox;
-QPointer<Player_Shortcut>shortcut;
+  QPointer<MediaList> mediaList;
+  QPointer<Player_Shortcut>shortcut;
 };
 
 #endif  // EUTERPE__PLAYERCONTROLLER_H_

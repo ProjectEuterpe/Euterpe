@@ -17,10 +17,9 @@ class MediaItemBox : public QGroupBox
 public:
     explicit MediaItemBox(Player *parent = nullptr);
     ~MediaItemBox();
-    void setPos(float x, float y);
     void setTitle(QString title);
     void setArtist(QString author);
-    void setPicture(QImage img);
+    void setImage(QImage img);
     void setMetaData(QMediaMetaData data);
     void setMediaUrl(const QUrl &newMedia_url);
     QUrl getMediaUrl();
@@ -35,9 +34,16 @@ private:
     QUrl media_url_;
     bool isPlaying;
 
+signals:
+    play(QUrl url);
+    pause();
+    stop();
+    deleteMedia(QUrl url);
+
 private slots:
     void onClickPlay();
     void onClickBtnInfo();
+    void onClickBtnDel();
 };
 
 #endif // MEDIALISTBOX_H
