@@ -1,8 +1,8 @@
-/**
- * @file player.h
+/*
+ * @file
  * @author Mikra Selene
- * @version 1.0
- * @date 2022.04.05
+ * @version
+ * @date
  *
  * @section LICENSE
  *
@@ -26,49 +26,51 @@
 #define EUTERPE__PLAYER_H_
 
 #include <QAudioOutput>
-#include <QMediaPlayer>
+#include <QFileDialog>
 #include <QMediaMetaData>
+#include <QMediaPlayer>
 #include <QPointer>
+#include <QTime>
 #include <QVariant>
 #include <QWidget>
 
-#include "FloatTable.h"
+#include "../MetaData/MetaDataFloatTable.h"
 
-#include <QFileDialog>
-#include <QTime>
-
-
-QT_BEGIN_NAMESPACE
 namespace Ui {
 class Player;
 }
 using PlayerUiPtr = Ui::Player *;
-QT_END_NAMESPACE
+
+enum class PlayOrder { OnlyOnce, InOrder, Random, SingleLoop };
 
 class Player : public QWidget {
   Q_OBJECT
 
  public:
-  explicit Player(const QPointer<QWidget> &parent = nullptr);
+  explicit Player(const QPointer<QWidget> &parent = Q_NULLPTR);
   ~Player() override;
 
  public:
   void setLoopLock(bool lock);
-  void setProgressSliderMax(int max);
-  void setButtonLabelPlay(bool play);
-  void setButtonVolume(bool volume);
-  void setPlayOrderIcon(int type);
+  void setProgressSliderMax(const qint32 &max);
+  void setButtonPlayIcon(bool play);
+  void setButtonVolumeIcon(bool unmute);
+  void setPlayOrderIcon(const PlayOrder &type);
 
-   void setIsFullScreenIcon();
-   void changeFullScreen();
+  void setIsFullScreenIcon();
+  void changeFullScreenStatus();
+
+  // TODO:
   void addFloatTable(float x, float y, QString text);
+
   //展示帧图相关
   void setFrame(QImage image);
   void setFramePos(float x);
+
   void setMediaUrl(const QUrl &newMedia_url);
-  void addFloatTable(QPushButton* info, QString text, int posType = 0);
-  void addMediaItemBox(QWidget* widget);
-  void deleteMediaItemBox(QWidget* widget);
+  void addFloatTable(QPushButton *info, QString text, int posType = 0);
+  void addMediaItemBox(QWidget *widget);
+  void deleteMediaItemBox(QWidget *widget);
   void addMediaItemSpacerV();
 
 #define nd [[nodiscard]]
@@ -76,17 +78,16 @@ class Player : public QWidget {
   nd auto mediaPlayer() const -> QPointer<QMediaPlayer>;
   nd auto audioOutput() const -> QPointer<QAudioOutput>;
   nd bool rewind() const;
- // nd bool loop() const;
-  nd bool isFullScreen() const;
   nd auto duration() const -> qint64;
   nd auto totalTime() const -> qint64;
   nd auto metaData() const -> QMediaMetaData;
   nd auto state() const -> QMediaPlayer::PlaybackState;
-  nd auto sliderVolume() const -> float;
+  nd auto sliderVolume() const -> qreal;
   nd auto sliderProgress() const -> qint64;
   nd auto comboBoxRate() const -> qreal;
   nd bool endOfMedia() const;
-public slots:
+
+ public slots:
   //定时关闭展示的frame
   void closeFrameShow();
   void playMedia();
@@ -94,30 +95,31 @@ public slots:
   void pauseMedia();
 #undef nd
 
-signals:
+ signals:
   //全屏状态下，展示工具栏
- void showBar();
- // 导入媒体
- void addMedia(QUrl url);
-private slots:
- void progressing(qint64 progress);
- void onClickOpen();
- void onClickFullScreen();
- bool eventFilter(QObject *, QEvent *) override;
+  void showBar();
+  // 导入媒体
+  void addMedia(QUrl url);
+
+ private slots:
+  void progressing(qint64 progress);
+  void onClickOpen();
+  void onClickFullScreen();
+  bool eventFilter(QObject *, QEvent *) override;
 
  private:
   void initMedia(const QUrl &url);
   void updateTimeLabel(qint64 time);
+
  private:
   PlayerUiPtr ui_;
-  QPointer<QMediaPlayer> media_player_;
-  QPointer<QAudioOutput> audio_output_;
-  bool isfullScreen;
- QPointer<FloatTable>frame;
+  QPointer<QMediaPlayer> mediaPlayer_;
+  QPointer<QAudioOutput> audioOutput_;
+  bool isFullScreen_;
+  QPointer<MetaDataFloatTable> frame_;
 
  public:
-  QUrl media_url_;
-
+  QUrl mediaUrl_;
 };
 
 #endif  // EUTERPE__PLAYER_H_

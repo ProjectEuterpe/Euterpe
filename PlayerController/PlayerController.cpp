@@ -1,8 +1,8 @@
-/**
- * @file playercontroller.cpp
+/*
+ * @file
  * @author Mikra Selene
- * @version 1.0
- * @date 2022.04.05
+ * @version
+ * @date
  *
  * @section LICENSE
  *
@@ -24,18 +24,21 @@
 
 #include "PlayerController.h"
 
-#include <QDockWidget>
-#include <QTextEdit>
-#include"ProgressSlider.h"
-#include "ui_Player.h"
+#include <QJsonObject>
+
+#include "../UI/ui_Player.h"
 
 PlayerController::PlayerController(const QPointer<Player> &player) {
-  player_ = player;
-  auto ui = player_->ui();
-  //快捷键
-shortcut=QPointer<Player_Shortcut>(new Player_Shortcut(player));
-connect(shortcut,&Player_Shortcut::changeVolume,this,&PlayerController::setVolumeValue);
-connect(shortcut,&Player_Shortcut::changeProgress,this,&PlayerController::setProgressValue);
+  this->player_ = player;
+  auto ui = this->player_->ui();
+  this->shortcut_ = QPointer<PlayerShortcut>(new PlayerShortcut(player));
+
+  // connect shortcuts
+#define shortcut_connection(signal, slot) \
+  connect(shortcut_, &PlayerShortcut::signal, this, &PlayerController::slot)
+  shortcut_connection(changeVolume, setVolumeValue);
+  shortcut_connection(changeProgress, setProgressValue);
+#undef shortcut_connection
 
   // connect clicks on buttons to handlers
 #define on_click_connection(sender, slot) \
@@ -45,16 +48,15 @@ connect(shortcut,&Player_Shortcut::changeProgress,this,&PlayerController::setPro
   on_click_connection(next, onClickNext);
   on_click_connection(stop, onClickStop);
   on_click_connection(info, onClickInfo);
-  on_click_connection(btn_volume, onClickBtnVolume);
+  on_click_connection(volume, onClickBtnVolume);
 #undef on_click_connection
-
 
   // connect changes of sliders to handlers
 #define on_change_slider_connection(sender, signal, slot) \
   connect(ui->sender, &QSlider::signal, this, &PlayerController::slot)
-  on_change_slider_connection(progress_slider, sliderMoved, onChangeProgress);
-  on_change_slider_connection(progress_slider, sliderPressed, onChangeProgress);
-  on_change_slider_connection(volume_slider, valueChanged, onChangeVolume);
+  on_change_slider_connection(progressSlider, sliderMoved, onChangeProgress);
+  on_change_slider_connection(progressSlider, sliderPressed, onChangeProgress);
+  on_change_slider_connection(volumeSlider, valueChanged, onChangeVolume);
 #undef on_change_slider_connection
 
   // connect changes of the checkbox and the combobox to handlers
@@ -63,10 +65,10 @@ connect(shortcut,&Player_Shortcut::changeProgress,this,&PlayerController::setPro
   connect(ui->rate, &QComboBox::currentTextChanged, this,
           &PlayerController::onChangeRate);
 
-  connect(player_->mediaPlayer(), &QMediaPlayer::metaDataChanged,
-          this, &PlayerController::onChangeMetaData);
-  connect(player_->mediaPlayer(), &QMediaPlayer::durationChanged,
-          this, &PlayerController::onChangeDuration);
+  connect(player_->mediaPlayer(), &QMediaPlayer::metaDataChanged, this,
+          &PlayerController::onChangeMetaData);
+  connect(player_->mediaPlayer(), &QMediaPlayer::durationChanged, this,
+          &PlayerController::onChangeDuration);
 
   // connect signals to Qt media controllers
 #define media_control_connection(signal, slot) \
@@ -74,134 +76,139 @@ connect(shortcut,&Player_Shortcut::changeProgress,this,&PlayerController::setPro
   media_control_connection(play, &QMediaPlayer::play);
   media_control_connection(pause, &QMediaPlayer::pause);
   media_control_connection(stop, &QMediaPlayer::stop);
+
   // todo: connect to MediaList
   connect(this, &PlayerController::prev, this, []() -> void {});
   connect(this, &PlayerController::prev, this, []() -> void {});
-  // todo: connect to metaData
+  // todo: connect to MetaData
   connect(this, &PlayerController::info, this, []() -> void {});
+
   media_control_connection(changeRate, &QMediaPlayer::setPlaybackRate);
   media_control_connection(changeProgress, &QMediaPlayer::setPosition);
-  connect(this, &PlayerController::stop, ui->video_widget,
+
+  connect(this, &PlayerController::stop, ui->videoWidget,
           QOverload<>::of(&QVideoWidget::update));
   connect(this, &PlayerController::changeVolume, player_->audioOutput(),
           &QAudioOutput::setVolume);
   connect(player_->mediaPlayer(), &QMediaPlayer::mediaStatusChanged, this,
           &PlayerController::atEnd);
-  //全屏时工具栏计时器
-  showBarTimer=QPointer<QTimer>{new QTimer()};
- connect(showBarTimer,&QTimer::timeout,this,&PlayerController::onTimerEnd);
- connect(player_,&Player::showBar,this,&PlayerController::onTimerStart);
+#undef media_control_connection
 
-#undef control_connection
-  frameData=QPointer<GetFrameData>{new GetFrameData(player_)};
+  //全屏时工具栏计时器
+  showBarTimer = QPointer<QTimer>{new QTimer()};
+  connect(showBarTimer, &QTimer::timeout, this, &PlayerController::onTimerEnd);
+  connect(player_, &Player::showBar, this, &PlayerController::onTimerStart);
+
+  frameData = QPointer<GetFrameData>{new GetFrameData(player_)};
 
   //帧展示
-  connect(frameData,&GetFrameData::doneGetFrame,this,&PlayerController::showFrameData);
-  connect(player_->ui()->progress_slider,&ProgressSlider::onMouseMove,this,&PlayerController::onProgressMouseOn);
-//计算关闭帧
-  showFrameTimer=QPointer<QTimer>{new QTimer()};
+  connect(frameData, &GetFrameData::doneGetFrame, this,
+          &PlayerController::showFrameData);
+  // connect(player_->ui_()->progress_slider, &ProgressSlider::onMouseMove,
+  // this,
+  //         &PlayerController::onProgressMouseOn);
+  //计算关闭帧
+  showFrameTimer = QPointer<QTimer>{new QTimer()};
   showFrameTimer->setSingleShot(true);
-connect(showFrameTimer,&QTimer::timeout,player_,&Player::closeFrameShow);
-
+  connect(showFrameTimer, &QTimer::timeout, player_, &Player::closeFrameShow);
 
   // 初始化媒体库列表
   initMediaList();
 
   // 新导入媒体 addMedia
-  connect(player_,&Player::addMedia,this,&PlayerController::addMediaItem);
+  connect(player_, &Player::addMedia, this, &PlayerController::addMediaItem);
   // 切换媒体
-  connect(mediaList,&MediaList::changeCurrMedia,this,&PlayerController::onChangeCurrMedia);
+  connect(mediaList, &MediaList::changeCurrMedia, this,
+          &PlayerController::onChangeCurrMedia);
   // 播放暂停
-  connect(mediaList,&MediaList::play,player_,&Player::playMedia);
-  connect(mediaList,&MediaList::pause,player_,&Player::pauseMedia);
-  connect(mediaList,&MediaList::stop,player_,&Player::stopMedia);
+  connect(mediaList, &MediaList::play, player_, &Player::playMedia);
+  connect(mediaList, &MediaList::pause, player_, &Player::pauseMedia);
+  connect(mediaList, &MediaList::stop, player_, &Player::stopMedia);
   // 播放顺序控制
-  connect(ui->btn_play_order,&QPushButton::clicked,mediaList,&MediaList::onChangePlayOrder);
+  connect(ui->playOrder, &QPushButton::clicked, mediaList,
+          &MediaList::onChangePlayOrder);
 
   // 音视频列表播放切换
-  connect(player_->mediaPlayer(),&QMediaPlayer::sourceChanged,this,&PlayerController::checkUrl);
-
+  connect(player_->mediaPlayer(), &QMediaPlayer::sourceChanged, this,
+          &PlayerController::checkUrl);
 }
 
 //快捷键使用
-void PlayerController::setVolumeValue(const int add)
-{qDebug()<<"shortcut:changeVolum";
-    float nowVolume=player_->ui()->volume_slider->value();
-      player_->ui()->volume_slider->setFocus();
-player_->ui()->volume_slider->setValue(nowVolume+add);
+void PlayerController::setVolumeValue(const int add) {
+  qDebug() << "shortcut: change volume";
+  float nowVolume = player_->ui()->volumeSlider->value();
+  player_->ui()->volumeSlider->setFocus();
+  player_->ui()->volumeSlider->setValue(nowVolume + add);
 }
 //进度微调
-void PlayerController::setProgressValue(const int add)
-{       bool playing = player_->state() == QMediaPlayer::PlayingState;
-        if(playing)
-    player_->mediaPlayer()->pause();
-    qDebug()<<"beforeProgressPos:"<<player_->mediaPlayer()->position();
-   qint64 target= frameData->GetTargetFrameTime(player_->mediaPlayer()->position(),add);
-     if(target<0)target=0;
-     else
-     if(target>player_->duration())target=player_->duration();
-   player_->ui()->progress_slider->setValue(target);
-     player_->mediaPlayer()->setPosition(target);
-   qDebug()<<"afterProgressPos:"<<player_->mediaPlayer()->position();
-       if(playing)
-     player_->mediaPlayer()->play();
+void PlayerController::setProgressValue(const int add) {
+  bool playing = player_->state() == QMediaPlayer::PlayingState;
+  if (playing) player_->mediaPlayer()->pause();
+  qDebug() << "beforeProgressPos:" << player_->mediaPlayer()->position();
+  qint64 target =
+      frameData->GetTargetFrameTime(player_->mediaPlayer()->position(), add);
+  if (target < 0)
+    target = 0;
+  else if (target > player_->duration())
+    target = player_->duration();
+  player_->ui()->progressSlider->setValue(target);
+  player_->mediaPlayer()->setPosition(target);
+  qDebug() << "afterProgressPos:" << player_->mediaPlayer()->position();
+  if (playing) player_->mediaPlayer()->play();
 }
 
-QVariant PlayerController::getMetaMes(QMediaMetaData::Key key){
+QVariant PlayerController::getMetaMes(QMediaMetaData::Key key) {
   return player_->metaData().value(key);
 }
 
-void PlayerController::initMediaList(){
+void PlayerController::initMediaList() {
   player_->addMediaItemSpacerV();
   mediaList = QPointer<MediaList>{new MediaList(player_)};
 }
 //音视频控制
-void PlayerController::checkUrl()
-{ //貌似没有值，待实现
+void PlayerController::checkUrl() {  //貌似没有值，待实现
 
-    QString type=getMetaMes(QMediaMetaData::MediaType).toString();
-    qDebug()<<type;
+  QString type = getMetaMes(QMediaMetaData::MediaType).toString();
+  qDebug() << type;
 
-        playVideo();
+  playVideo();
 
-     if(type=="audio")
-    {
-        playAudio();
-    }
-     else playVideo();
-}
-void PlayerController::playVideo()
-{qDebug()<<"play video";
-shortcut->playVideo();
-player_->ui()->progress_slider->setIsVideo(true);
-frameData->setIsVideo(true);
-}
-void PlayerController::playAudio()
-{qDebug()<<"play audio";
-    //取消帧相关快捷键
-    shortcut->playAudio();
-   player_->ui()->progress_slider->setIsVideo(false);
-   frameData->setIsVideo(false);
-   //专辑图片展示
-   QImage image=getMetaMes(QMediaMetaData::CoverArtImage).value<QImage>();
-   QPalette palette;
-   palette.setBrush(this->backgroundRole(),QBrush(image));
-   player_->ui()->video_widget->setPalette(palette);
-}
-void PlayerController::addMediaItem(QUrl url){
-  if(url.isEmpty()) return;
-  mediaList->addMediaItem(url);
+  if (type == "audio") {
+    playAudio();
+  } else
+    playVideo();
 }
 
-void PlayerController::onChangeMetaData(){
-  qDebug()<<"onChangeMetaData";
+void PlayerController::playVideo() {
+  qDebug() << "play video";
+  shortcut_->playVideo();
+  // player_->ui_()->progress_slider->setIsVideo(true);
+  frameData->setIsVideo(true);
 }
 
-void PlayerController::onChangeDuration(){
-  qDebug()<<"onChangeDuration";
+void PlayerController::playAudio() {
+  qDebug() << "play audio";
+  shortcut_->playAudio();
+  // player_->ui_()->progress_slider->setIsVideo(false);
+  frameData->setIsVideo(false);
+  //专辑图片展示
+  QImage image = getMetaMes(QMediaMetaData::CoverArtImage).value<QImage>();
+  QPalette palette;
+  palette.setBrush(this->backgroundRole(), QBrush(image));
+  player_->ui()->videoWidget->setPalette(palette);
+}
+
+void PlayerController::addMediaItem(QUrl url) {
+  if (url.isEmpty()) return;
+  mediaList->importMedia(url);
+}
+
+void PlayerController::onChangeMetaData() { qDebug() << "onChangeMetaData"; }
+
+void PlayerController::onChangeDuration() {
+  qDebug() << "onChangeDuration";
   player_->setProgressSliderMax(static_cast<int>(player_->duration()));
 }
-
 
 #pragma region  // region: controller slots
 
@@ -218,7 +225,7 @@ void PlayerController::onClickPlay() {
   bool playing = player_->state() == QMediaPlayer::PlayingState;
   qDebug() << !playing;
   emit playing ? pause() : play();
-  player_->setButtonLabelPlay(playing);
+  player_->setButtonPlayIcon(playing);
   playing ? mediaList->playCurrMedia() : mediaList->stopCurrMedia();
   // default values of artist and title will be "Untitled" and "V/A"
   auto metadata = player_->metaData();
@@ -239,7 +246,7 @@ void PlayerController::onClickPlay() {
 void PlayerController::onClickStop() {
   qDebug() << "clicked: stop";
   emit stop();
-  player_->setButtonLabelPlay(true);
+  player_->setButtonPlayIcon(true);
 }
 
 /**
@@ -266,13 +273,9 @@ void PlayerController::onClickNext() {
 void PlayerController::onClickInfo() {
   qDebug() << "clicked: info";
   qDebug() << "media metadata:";
-  auto metadata = player_->metaData();
-  QString text = "";
-  for (auto k : metadata.keys()) {
-    qDebug() << k << ":" << metadata[k];
-    text += metadata.metaDataKeyToString(k) + ":" + metadata[k].toString() + '\n';
-  }
-  player_->addFloatTable(player_->ui()->info, text);
+  auto metaData = player_->metaData();
+  auto m = MetaData(metaData);
+  player_->addFloatTable(player_->ui()->info, m.toPrettyString());
   emit info();
 }
 
@@ -293,10 +296,10 @@ void PlayerController::onChangeVolume() {
   qDebug() << "changed: volume";
   float volumeCur = player_->sliderVolume();
   float volumePre = player_->audioOutput()->volume();
-  if(volumeCur && !volumePre){
-      player_->setButtonVolume(1);
-  } else if(!volumeCur && volumePre){
-      player_->setButtonVolume(0);
+  if (volumeCur && !volumePre) {
+    player_->setButtonVolumeIcon(1);
+  } else if (!volumeCur && volumePre) {
+    player_->setButtonVolumeIcon(0);
   }
   emit changeVolume(volumeCur);
 }
@@ -318,64 +321,56 @@ void PlayerController::onChangeRate() {
 void PlayerController::atEnd() {
   if (player_->endOfMedia()) {
     qDebug() << "end of media";
-//    emit player_->loop() ? play() : stop();
-//    player_->setButtonLabelPlay(!player_->loop());
+    //    emit player_->loop() ? play() : stop();
+    //    player_->setButtonPlayIcon(!player_->loop());
     mediaList->onNextMedia();
   }
 }
 
-void PlayerController::onTimerStart()
-{qDebug() << "TimeStart";
-showBarTimer->stop();
-showBarTimer->start(5000);
+void PlayerController::onTimerStart() {
+  qDebug() << "TimeStart";
+  showBarTimer->stop();
+  showBarTimer->start(5000);
 }
 
-void PlayerController::onTimerEnd()
-{
-    //隐藏
-    qDebug() << "TimeOut";
-    if(player_->isFullScreen())
-player_->ui()->control_pad->setHidden(true);
-    showBarTimer->stop();
+void PlayerController::onTimerEnd() {
+  //隐藏
+  qDebug() << "TimeOut";
+  if (player_->isFullScreen()) player_->ui()->controlPad->setHidden(true);
+  showBarTimer->stop();
 }
 
-
-
-void PlayerController::onProgressMouseOn(const double per)
-{
-    //获取目标时间
- int target=per*getMetaMes(QMediaMetaData::Duration).toInt();
- qDebug()<<"hover time:"<<target;
- player_->setFramePos(per);
- frameData->GetTargetFrameImage(target);
-
+void PlayerController::onProgressMouseOn(const double per) {
+  //获取目标时间
+  int target = per * getMetaMes(QMediaMetaData::Duration).toInt();
+  qDebug() << "hover time:" << target;
+  player_->setFramePos(per);
+  frameData->GetTargetFrameImage(target);
 }
 
-void PlayerController::showFrameData( QImage image)
-{
+void PlayerController::showFrameData(QImage image) {
   player_->setFrame(image);
-showFrameTimer->start(1500);
+  showFrameTimer->start(1500);
 }
-
 
 /**
  * @brief Handler called when the value of `btn_volume` button is clicked.
  * It set the volume 0 or previous value.
  */
-void PlayerController::onClickBtnVolume(){
+void PlayerController::onClickBtnVolume() {
   qDebug() << "clicked: btn_volume";
   float volume = player_->audioOutput()->volume();
-  if(volume){
-    player_->setButtonVolume(0);
+  if (volume) {
+    player_->setButtonVolumeIcon(false);
     emit changeVolume(0);
   } else {
-    player_->setButtonVolume(1);
+    player_->setButtonVolumeIcon(true);
     emit changeVolume(player_->sliderVolume());
   }
 }
 
-void PlayerController::onChangeCurrMedia(QUrl url){
-    player_->setMediaUrl(url);
+void PlayerController::onChangeCurrMedia(QUrl url) {
+  player_->setMediaUrl(url);
 }
 
 #pragma endregion

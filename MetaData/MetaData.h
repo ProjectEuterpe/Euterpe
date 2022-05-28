@@ -1,8 +1,8 @@
 /**
- * @file main.cpp
+ * @file MetaData.h
  * @author Mikra Selene
- * @version 1.0
- * @date 2022.04.05
+ * @version
+ * @date
  *
  * @section LICENSE
  *
@@ -22,27 +22,30 @@
  * this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <QApplication>
-#include <QFile>
+#ifndef EUTERPE_METADATA_METADATA_H_
+#define EUTERPE_METADATA_METADATA_H_
 
-#include "MetaData/MetaDataFloatTable.h"
-#include "Player/Player.h"
-#include "PlayerController/PlayerController.h"
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QMediaMetaData>
 
-int main(int argc, char* argv[]) {
-  auto app = QPointer<QApplication>(new QApplication(argc, argv));
-  auto player = QPointer<Player>(new Player(Q_NULLPTR));
-  auto controller = QPointer<PlayerController>(new PlayerController(player));
+#define nd [[nodiscard]]
+#define mu [[maybe_unused]]
 
-  /* read qss*/
-  QString qss;
-  QFile qssFile(":/qss/main.qss");
-  qssFile.open(QFile::ReadOnly);
-  if (qssFile.isOpen()) {
-    qss = QLatin1String(qssFile.readAll());
-    qApp->setStyleSheet(qss);
-    qssFile.close();
-  }
-  player->show();
-  QApplication::exec();
-}
+class MetaData {
+ public:
+  explicit MetaData(QMediaMetaData metaData);
+  ~MetaData() = default;
+
+  mu nd auto toQtJsonObject() const -> QJsonObject;
+  mu nd auto toQtMetaData() const -> QMediaMetaData;
+  mu nd auto toJsonStringCompact() const -> QString;
+  mu nd auto toJsonStringIndented() const -> QString;
+  mu nd auto toPrettyString() const -> QString;
+
+ private:
+  QJsonDocument json_;
+  QMediaMetaData metaData_;
+};
+
+#endif  // EUTERPE_METADATA_METADATA_H_

@@ -3,10 +3,8 @@
     background-color: rgb(254, 254, 254);
 }
 
-
 QWeight{
 }
-
 
 QPushButton{
     color: rgb(0, 0, 2);

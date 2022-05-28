@@ -1,8 +1,8 @@
-/**
- * @file playercontroller.h
+/*
+ * @file
  * @author Mikra Selene
- * @version 1.0
- * @date 2022.04.05
+ * @version
+ * @date
  *
  * @section LICENSE
  *
@@ -22,17 +22,16 @@
  * this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef EUTERPE__PLAYERCONTROLLER_H_
-#define EUTERPE__PLAYERCONTROLLER_H_
-#include <QMediaMetaData>
-#include <QPointer>
-#include <QTimer>
+#ifndef EUTERPE_PLAYERCONTROLLER_PLAYERCONTROLLER_H_
+#define EUTERPE_PLAYERCONTROLLER_PLAYERCONTROLLER_H_
 
-#include "Player.h"
-#include "MediaItemBox.h"
-#include "MediaList.h"
-#include "GetFrameData.h"
-#include"Player_Shortcut.h"
+#include "../MediaList/MediaItemBox.h"
+#include "../MediaList/MediaList.h"
+#include "../MetaData/MetaData.h"
+#include "../Player/GetFrameData.h"
+#include "../Player/Player.h"
+#include "PlayerShortcut.h"
+
 class PlayerController : public QWidget {
   Q_OBJECT
 
@@ -40,8 +39,8 @@ class PlayerController : public QWidget {
   explicit PlayerController(const QPointer<Player> &player);
   ~PlayerController() override = default;
 
-    //整理获取元数据
-    //获取单一元数据
+  //整理获取元数据
+  //获取单一元数据
   QVariant getMetaMes(QMediaMetaData::Key key);
 
   // 初始化媒体库列表
@@ -61,8 +60,7 @@ class PlayerController : public QWidget {
   void btn_play_order();
   void changeRate(qreal rate);
   void changeProgress(qint64 progress);
-  void changeVolume(float volume);
-
+  void changeVolume(qreal volume);
 #pragma clang diagnostic pop
 
  private slots:
@@ -82,10 +80,10 @@ class PlayerController : public QWidget {
   void checkUrl();
   //进度条实现帧图展现
   void onProgressMouseOn(const double);
-    void showFrameData(QImage image);
-    //快捷键使用部分
-     void setVolumeValue(const int add);
-     void setProgressValue(const int add);
+  void showFrameData(QImage image);
+  //快捷键使用部分
+  void setVolumeValue(const int add);
+  void setProgressValue(const int add);
   void onChangeMetaData();
   void onChangeDuration();
   void onChangeCurrMedia(QUrl url);
@@ -96,13 +94,13 @@ class PlayerController : public QWidget {
   void playAudio();
   QPointer<Player> player_;
   //鼠标不移动，计时5秒
-  QPointer<QTimer>showBarTimer;
+  QPointer<QTimer> showBarTimer;
   //计时300ms，关闭展示的Frame
-  QPointer<QTimer>showFrameTimer;
-  QPointer<GetFrameData>frameData;
+  QPointer<QTimer> showFrameTimer;
+  QPointer<GetFrameData> frameData;
   QPointer<MediaItemBox> curMediaItemBox;
   QPointer<MediaList> mediaList;
-  QPointer<Player_Shortcut>shortcut;
+  QPointer<PlayerShortcut> shortcut_;
 };
 
-#endif  // EUTERPE__PLAYERCONTROLLER_H_
+#endif  // EUTERPE_PLAYERCONTROLLER_PLAYERCONTROLLER_H_
