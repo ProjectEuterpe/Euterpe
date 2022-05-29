@@ -1,4 +1,4 @@
-/*
+﻿/*
  * @file
  * @author Mikra Selene
  * @version
@@ -33,6 +33,7 @@
 #include <QTime>
 #include <QVariant>
 #include <QWidget>
+#include <QStackedWidget>
 
 #include "../MetaData/MetaDataFloatTable.h"
 
@@ -86,6 +87,7 @@ class Player : public QWidget {
   nd auto sliderProgress() const -> qint64;
   nd auto comboBoxRate() const -> qreal;
   nd bool endOfMedia() const;
+  nd auto url()const ->QUrl;
 
  public slots:
   //定时关闭展示的frame
@@ -117,6 +119,7 @@ class Player : public QWidget {
   QPointer<QAudioOutput> audioOutput_;
   bool isFullScreen_;
   QPointer<MetaDataFloatTable> frame_;
+  QPointer<QStackedWidget> stacked_widget;
 
  public:
   QUrl mediaUrl_;

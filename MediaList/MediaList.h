@@ -1,4 +1,4 @@
-/*
+﻿/*
  * @file
  * @author Mikra Selene
  * @version
@@ -62,6 +62,7 @@ class MediaList : public QObject {
   void pause();
   void stop();
   void changeCurrMedia(QUrl url);
+    void endMedialist();
 #pragma clang diagnostic pop
 
  private slots:

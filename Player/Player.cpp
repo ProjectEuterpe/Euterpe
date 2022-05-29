@@ -1,4 +1,4 @@
-/*
+﻿/*
  * @file
  * @author Mikra Selene
  * @version
@@ -58,6 +58,14 @@ Player::Player(const QPointer<QWidget>& parent)
   frame_ = QPointer<MetaDataFloatTable>{new MetaDataFloatTable()};
   frame_->setWindowFlags(Qt::Popup);
   frame_->setHidden(true);
+  stacked_widget=QPointer<QStackedWidget>{new QStackedWidget};
+  ui_->stacked_widget->setCurrentWidget(ui_->initWidget);
+  QImage *img = new QImage;
+      img->load(":/images/1.jpg");
+      QPixmap pixmap = QPixmap::fromImage(*img);
+      QPixmap fitpixmap = pixmap.scaled(311, 231, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+      ui_->label_2->setScaledContents(true);
+      ui_->label_2->setPixmap(fitpixmap);
 }
 
 Player::~Player() { delete ui_; }
@@ -257,6 +265,9 @@ bool Player::endOfMedia() const {
   return mediaPlayer_->mediaStatus() == QMediaPlayer::EndOfMedia;
 }
 
+auto Player::url()const ->QUrl{
+    return mediaPlayer_->source();
+}
 #pragma endregion
 
 #pragma region  // region: private slots

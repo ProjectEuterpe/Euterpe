@@ -1,4 +1,4 @@
-/*
+﻿/*
  * @file
  * @author Mikra Selene
  * @version
@@ -110,6 +110,7 @@ void MediaList::deleteMedia(QUrl url) {
       onNextMedia();
     }
   }
+  if(index==0) emit endMedialist();
 }
 
 void MediaList::onNextMedia() {

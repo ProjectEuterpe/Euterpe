@@ -1,4 +1,4 @@
-/*
+﻿/*
  * @file
  * @author Mikra Selene
  * @version
@@ -87,6 +87,7 @@ class PlayerController : public QWidget {
   void onChangeMetaData();
   void onChangeDuration();
   void onChangeCurrMedia(QUrl url);
+    void showInitWidget();
 
  private:
   //音视频控制
