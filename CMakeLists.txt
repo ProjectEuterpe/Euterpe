@@ -4,8 +4,8 @@ project(Euterpe)
 #set(CMAKE_PREFIX_PATH "/Users/mikraselene/Qt/6.2.4/macos")
 #set(CMAKE_PREFIX_PATH "D:/QT/QT6.2.4/6.2.4/mingw_64") # weiting's
 #set(CMAKE_PREFIX_PATH "C:/Qt/Qt6.2/6.2.4/msvc2019_64/lib/cmake")
-set(CMAKE_PREFIX_PATH "D:/Qt/6.2.4/msvc2019_64/lib/cmake")
-
+#set(CMAKE_PREFIX_PATH "D:/Qt/6.2.4/msvc2019_64/lib/cmake")
+set(CMAKE_PREFIX_PATH "C:/Qt/6.2/6.2.4/msvc2019_64/lib/cmake")
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_AUTOMOC ON)

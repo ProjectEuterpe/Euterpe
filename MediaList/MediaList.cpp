@@ -178,4 +178,27 @@ void MediaList::onChangePlayOrder() {
   }
 }
 
+void MediaList::playPrevMedia() {
+    qDebug() << "clicked: playPrevMedia";
+    if(currIndex - 1 == -1) {
+        currIndex = mediaList_.length()-1;
+    }
+    else {
+        currIndex = (currIndex - 1) % mediaList_.length();
+    }
+    currMediaItem_->setActive(false);
+    currMediaItem_ = mediaList_[currIndex];
+    currMediaItem_->setActive(true);
+    emit changeCurrMedia(currMediaItem_->getMediaUrl());
+}
+
+void MediaList::playNextMedia() {
+    qDebug() << "clicked: playNextMedia";
+    currIndex = (currIndex + 1) % mediaList_.length();
+    currMediaItem_->setActive(false);
+    currMediaItem_ = mediaList_[currIndex];
+    currMediaItem_->setActive(true);
+    emit changeCurrMedia(currMediaItem_->getMediaUrl());
+}
+
 void MediaList::initDatabase() {}

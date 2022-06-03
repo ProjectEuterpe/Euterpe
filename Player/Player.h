@@ -34,6 +34,10 @@
 #include <QVariant>
 #include <QWidget>
 #include <QStackedWidget>
+#include<QDragEnterEvent>
+#include<QMimeData>
+#include<QDropEvent>
+#include<QUrl>
 
 #include "../MetaData/MetaDataFloatTable.h"
 
@@ -57,6 +61,8 @@ class Player : public QWidget {
   void setButtonPlayIcon(bool play);
   void setButtonVolumeIcon(bool unmute);
   void setPlayOrderIcon(const PlayOrder &type);
+  void setButtonPrevIcon();
+  void setButtonNextIcon();
 
   void setIsFullScreenIcon();
   void changeFullScreenStatus();
@@ -112,6 +118,10 @@ class Player : public QWidget {
  private:
   void initMedia(const QUrl &url);
   void updateTimeLabel(qint64 time);
+
+  //拖拽文件
+  void dragEnterEvent(QDragEnterEvent *e) override;
+  void dropEvent(QDropEvent *e) override;
 
  private:
   PlayerUiPtr ui_;

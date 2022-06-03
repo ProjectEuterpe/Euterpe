@@ -28,6 +28,9 @@
     <height>16777215</height>
    </size>
   </property>
+  <property name="acceptDrops">
+   <bool>true</bool>
+  </property>
   <property name="windowTitle">
    <string>Euterpe</string>
   </property>
@@ -697,6 +700,9 @@
           <height>0</height>
          </size>
         </property>
+        <property name="acceptDrops">
+         <bool>true</bool>
+        </property>
         <property name="widgetResizable">
          <bool>true</bool>
         </property>
@@ -708,6 +714,9 @@
            <width>246</width>
            <height>588</height>
           </rect>
+         </property>
+         <property name="acceptDrops">
+          <bool>true</bool>
          </property>
          <layout class="QVBoxLayout" name="scrollMediaListLayout">
           <property name="spacing">

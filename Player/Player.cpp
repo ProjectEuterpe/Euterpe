@@ -108,6 +108,22 @@ void Player::setButtonPlayIcon(bool play) {
 }
 
 /**
+ * @brief Set the icon of the `prev` button.
+ */
+void Player::setButtonPrevIcon() {
+    qDebug() << "set button prev icon";
+    ui_->prev->setIcon(QIcon(":/images/step-previous.svg"));
+}
+
+/**
+ * @brief Set the icon of the `next` button.
+ */
+void Player::setButtonNextIcon() {
+    qDebug() << "set button next icon";
+    ui_->next->setIcon(QIcon(":/images/step-next.svg"));
+}
+
+/**
  * @brief Set the icon of the `volume` button, depending on the parameter.
  * @param unmute: `true` if video is muted , `false` if video is unmuted.
  */
@@ -353,7 +369,11 @@ void Player::initMedia(const QUrl& url) {
   //  some buttons remain unavailable until a media file is loaded.
   ui_->play->setEnabled(true);
   ui_->stop->setEnabled(true);
+  ui_->prev->setEnabled(true);
+  ui_->next->setEnabled(true);
   setButtonPlayIcon(true);
+  setButtonPrevIcon();
+  setButtonNextIcon();
   emit addMedia(url);
 }
 
@@ -400,6 +420,23 @@ void Player::pauseMedia() {
 
 auto Player::state() const -> QMediaPlayer::PlaybackState {
   return mediaPlayer_->playbackState();
+}
+
+void Player::dragEnterEvent(QDragEnterEvent *event){
+    if(event->mimeData()->hasUrls())
+        event->acceptProposedAction(); //可以在这个窗口部件上拖放对象
+}
+
+void Player::dropEvent(QDropEvent *event)
+{
+    QList<QUrl> urls = event->mimeData()->urls();
+    if(urls.isEmpty())
+        return ;
+    foreach (QUrl u, urls) {
+        qDebug()<<u.toString();
+        initMedia(u);
+    }
+    qDebug()<< urls.size();
 }
 
 #pragma endregion

@@ -75,7 +75,7 @@ void MediaItemBox::setBtnPlay(bool play) {
 }
 
 void MediaItemBox::setActive(bool active) {
-  QString color = active ? "background-color: #f8f8f8" : "";
+  QString color = active ? "background-color: #E5E5E5" : "";
   this->setStyleSheet(color);
   if (!active) {
     isPlaying = false;

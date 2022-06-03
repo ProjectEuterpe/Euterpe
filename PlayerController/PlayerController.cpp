@@ -79,9 +79,7 @@ PlayerController::PlayerController(const QPointer<Player> &player) {
   media_control_connection(pause, &QMediaPlayer::pause);
   media_control_connection(stop, &QMediaPlayer::stop);
 
-  // todo: connect to MediaList
-  connect(this, &PlayerController::prev, this, []() -> void {});
-  connect(this, &PlayerController::prev, this, []() -> void {});
+
   // todo: connect to MetaData
   connect(this, &PlayerController::info, this, []() -> void {});
 
@@ -116,6 +114,10 @@ PlayerController::PlayerController(const QPointer<Player> &player) {
 
   // 初始化媒体库列表
   initMediaList();
+
+  // connect to MediaList
+  connect(this, &PlayerController::prev, mediaList, &MediaList::playPrevMedia);
+  connect(this, &PlayerController::next, mediaList, &MediaList::playNextMedia);
 
   // 新导入媒体 addMedia
   connect(player_, &Player::addMedia, this, &PlayerController::addMediaItem);

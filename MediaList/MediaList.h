@@ -33,7 +33,7 @@
 class MediaList : public QObject {
   Q_OBJECT
  private:
-  PlayOrder playOrder_;
+  PlayOrder playOrder_ = PlayOrder::OnlyOnce;
   QPointer<Player> player_;
   QPointer<QMediaPlayer> mediaPlayer_;
   QList<QPointer<MediaItemBox>> mediaList_;
@@ -72,6 +72,8 @@ class MediaList : public QObject {
  public slots:
   void onChangePlayOrder();
   void onNextMedia();
+  void playPrevMedia();
+  void playNextMedia();
 };
 
 #endif  // EUTERPE_MEDIALIST_MEDIALIST_H_
