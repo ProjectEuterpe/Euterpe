@@ -35,8 +35,10 @@
 class MetaData {
  public:
   explicit MetaData(QMediaMetaData metaData);
+  explicit MetaData(const QString& json);
   ~MetaData() = default;
 
+  mu nd auto get(const QString& key) -> QVariant;
   mu nd auto toQtJsonObject() const -> QJsonObject;
   mu nd auto toQtMetaData() const -> QMediaMetaData;
   mu nd auto toJsonStringCompact() const -> QString;

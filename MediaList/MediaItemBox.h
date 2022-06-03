@@ -46,8 +46,8 @@ class MediaItemBox : public QGroupBox {
   void setImage(QImage img);
   void setMetaData(QMediaMetaData data);
   void setMediaUrl(const QUrl &newMedia_url);
-  QUrl getMediaUrl();
-  void setBtnPlay(bool play);
+  QUrl getMediaUrl() const;
+  void setButtonPlay(bool play);
   void setActive(bool active);
 
  private:

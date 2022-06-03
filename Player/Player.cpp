@@ -29,6 +29,7 @@
 #include <QTime>
 
 #include "../MediaList/MediaItemBox.h"
+#include "../MediaList/MediaListSql.h"
 #include "../MetaData/MetaDataFloatTable.h"
 #include "../UI/ui_Player.h"
 #include "ProgressSlider.h"
@@ -58,14 +59,15 @@ Player::Player(const QPointer<QWidget>& parent)
   frame_ = QPointer<MetaDataFloatTable>{new MetaDataFloatTable()};
   frame_->setWindowFlags(Qt::Popup);
   frame_->setHidden(true);
-  stacked_widget=QPointer<QStackedWidget>{new QStackedWidget};
+  stacked_widget = QPointer<QStackedWidget>{new QStackedWidget};
   ui_->stacked_widget->setCurrentWidget(ui_->initWidget);
-  QImage *img = new QImage;
-      img->load(":/images/1.jpg");
-      QPixmap pixmap = QPixmap::fromImage(*img);
-      QPixmap fitpixmap = pixmap.scaled(311, 231, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-      ui_->label_2->setScaledContents(true);
-      ui_->label_2->setPixmap(fitpixmap);
+  QImage* img = new QImage;
+  img->load(":/images/1.jpg");
+  QPixmap pixmap = QPixmap::fromImage(*img);
+  QPixmap fitpixmap =
+      pixmap.scaled(311, 231, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+  ui_->label_2->setScaledContents(true);
+  ui_->label_2->setPixmap(fitpixmap);
 }
 
 Player::~Player() { delete ui_; }
@@ -105,6 +107,19 @@ void Player::setButtonPlayIcon(bool play) {
   qDebug() << "set button play icon:" << play;
   ui_->play->setIcon(
       QIcon(play ? ":/images/circle-play.svg" : ":/images/circle-pause.svg"));
+}
+
+void Player::setButtonPrevIcon() {
+  qDebug() << "set button prev icon";
+  ui_->prev->setIcon(QIcon(":/images/step-previous.svg"));
+}
+
+/**
+ * @brief Set the icon of the `next` button.
+ */
+void Player::setButtonNextIcon() {
+  qDebug() << "set button next icon";
+  ui_->next->setIcon(QIcon(":/images/step-next.svg"));
 }
 
 /**
@@ -265,9 +280,7 @@ bool Player::endOfMedia() const {
   return mediaPlayer_->mediaStatus() == QMediaPlayer::EndOfMedia;
 }
 
-auto Player::url()const ->QUrl{
-    return mediaPlayer_->source();
-}
+auto Player::url() const -> QUrl { return mediaPlayer_->source(); }
 #pragma endregion
 
 #pragma region  // region: private slots
@@ -300,15 +313,12 @@ void Player::progressing(qint64 progress) {
  */
 void Player::onClickOpen() {
   qDebug() << "clicked: open";
-  auto file_dialog = QFileDialog{this};
-  file_dialog.setAcceptMode(QFileDialog::AcceptOpen);
-  file_dialog.setWindowTitle(tr("Open File"));
-  if (file_dialog.exec() == QDialog::Accepted) {
-    qDebug() << "open: accepted, " << file_dialog.selectedUrls();
-    if (mediaUrl_.isEmpty())
-      initMedia(file_dialog.selectedUrls()[0]);
-    else
-      emit addMedia(file_dialog.selectedUrls()[0]);
+  auto fileDialog = QFileDialog{this};
+  fileDialog.setAcceptMode(QFileDialog::AcceptOpen);
+  fileDialog.setWindowTitle(tr("Open File"));
+  if (fileDialog.exec() == QDialog::Accepted) {
+    qDebug() << "open: accepted, " << fileDialog.selectedUrls();
+    initMedia(fileDialog.selectedUrls()[0]);
   } else {
     qDebug() << "open: rejected";
   }
@@ -353,7 +363,12 @@ void Player::initMedia(const QUrl& url) {
   //  some buttons remain unavailable until a media file is loaded.
   ui_->play->setEnabled(true);
   ui_->stop->setEnabled(true);
+  ui_->prev->setEnabled(true);
+  ui_->next->setEnabled(true);
   setButtonPlayIcon(true);
+  setButtonPrevIcon();
+  setButtonNextIcon();
+
   emit addMedia(url);
 }
 
@@ -400,6 +415,21 @@ void Player::pauseMedia() {
 
 auto Player::state() const -> QMediaPlayer::PlaybackState {
   return mediaPlayer_->playbackState();
+}
+
+void Player::dragEnterEvent(QDragEnterEvent* event) {
+  if (event->mimeData()->hasUrls())
+    event->acceptProposedAction();  //可以在这个窗口部件上拖放对象
+}
+
+void Player::dropEvent(QDropEvent* event) {
+  QList<QUrl> urls = event->mimeData()->urls();
+  if (urls.isEmpty()) return;
+  foreach (QUrl u, urls) {
+    qDebug() << u.toString();
+    initMedia(u);
+  }
+  qDebug() << urls.size();
 }
 
 #pragma endregion

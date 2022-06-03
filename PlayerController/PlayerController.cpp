@@ -26,6 +26,7 @@
 
 #include <QJsonObject>
 
+#include "../MetaData/MetaData.h"
 #include "../UI/ui_Player.h"
 
 PlayerController::PlayerController(const QPointer<Player> &player) {
@@ -70,7 +71,8 @@ PlayerController::PlayerController(const QPointer<Player> &player) {
           &PlayerController::onChangeMetaData);
   connect(player_->mediaPlayer(), &QMediaPlayer::durationChanged, this,
           &PlayerController::onChangeDuration);
-  connect(player_->mediaPlayer(),&QMediaPlayer::metaDataChanged,this,&PlayerController::checkUrl);
+  connect(player_->mediaPlayer(), &QMediaPlayer::metaDataChanged, this,
+          &PlayerController::checkUrl);
 
   // connect signals to Qt media controllers
 #define media_control_connection(signal, slot) \
@@ -80,8 +82,8 @@ PlayerController::PlayerController(const QPointer<Player> &player) {
   media_control_connection(stop, &QMediaPlayer::stop);
 
   // todo: connect to MediaList
-  connect(this, &PlayerController::prev, this, []() -> void {});
-  connect(this, &PlayerController::prev, this, []() -> void {});
+  connect(this, &PlayerController::prev, mediaList, &MediaList::playPrevMedia);
+  connect(this, &PlayerController::next, mediaList, &MediaList::playNextMedia);
   // todo: connect to MetaData
   connect(this, &PlayerController::info, this, []() -> void {});
 
@@ -120,11 +122,11 @@ PlayerController::PlayerController(const QPointer<Player> &player) {
   // 新导入媒体 addMedia
   connect(player_, &Player::addMedia, this, &PlayerController::addMediaItem);
   // 切换媒体
-  connect(mediaList, &MediaList::changeCurrMedia, this,
+  connect(mediaList, &MediaList::changeCurrentMedia, this,
           &PlayerController::onChangeCurrMedia);
   // 播放暂停
   connect(mediaList, &MediaList::play, player_, &Player::playMedia);
-  connect(mediaList,&MediaList::play,this,&PlayerController::checkUrl);
+  connect(mediaList, &MediaList::play, this, &PlayerController::checkUrl);
   connect(mediaList, &MediaList::pause, player_, &Player::pauseMedia);
   connect(mediaList, &MediaList::stop, player_, &Player::stopMedia);
   // 播放顺序控制
@@ -132,19 +134,21 @@ PlayerController::PlayerController(const QPointer<Player> &player) {
           &MediaList::onChangePlayOrder);
 
   // 音视频列表播放切换
-  //connect(player_->mediaPlayer(), &QMediaPlayer::sourceChanged, this,&PlayerController::checkUrl);
-  connect(mediaList,&MediaList::endMedialist,this,&PlayerController::showInitWidget);
+  // connect(player_->mediaPlayer(), &QMediaPlayer::sourceChanged,
+  // this,&PlayerController::checkUrl);
+  connect(mediaList, &MediaList::endOfMediaList, this,
+          &PlayerController::showInitWidget);
 }
 
 //快捷键使用
-void PlayerController::setVolumeValue(const int add) {
+void PlayerController::setVolumeValue(const int &add) {
   qDebug() << "shortcut: change volume";
   float nowVolume = player_->ui()->volumeSlider->value();
   player_->ui()->volumeSlider->setFocus();
   player_->ui()->volumeSlider->setValue(nowVolume + add);
 }
 //进度微调
-void PlayerController::setProgressValue(const int add) {
+void PlayerController::setProgressValue(const int &add) {
   bool playing = player_->state() == QMediaPlayer::PlayingState;
   if (playing) player_->mediaPlayer()->pause();
   qDebug() << "beforeProgressPos:" << player_->mediaPlayer()->position();
@@ -160,33 +164,44 @@ void PlayerController::setProgressValue(const int add) {
   if (playing) player_->mediaPlayer()->play();
 }
 
-QVariant PlayerController::getMetaMes(QMediaMetaData::Key key) {
+auto PlayerController::getMetaData(const QMediaMetaData::Key &key) -> QVariant {
   return player_->metaData().value(key);
 }
 
 void PlayerController::initMediaList() {
   player_->addMediaItemSpacerV();
   mediaList = QPointer<MediaList>{new MediaList(player_)};
+
+  auto database_ = mediaList->database_;
+  // get data from database...
+  for (const auto &row : database_->table()) {
+    // qDebug() << QUrl("file://" + row->mediaPath);
+    player_->initMedia(QUrl("file://" + row->mediaPath));
+    auto xx = MetaData(row->metaData);
+    mediaList->addMediaItemBox(QUrl("file://" + row->mediaPath),
+                               xx.get("Album title").toString(),
+                               xx.get("Title").toString());
+  }
 }
 //音视频控制
 void PlayerController::checkUrl() {  //貌似没有值，待实现
 
-    QString type=getMetaMes(QMediaMetaData::MediaType).toString();
-    qDebug()<<getMetaMes(QMediaMetaData::MediaType).toString()<<"显示音频或视频";
-       QUrl url=player_->url();
-       const QFileInfo fileInfo(url.toLocalFile());
-       int type1=fileInfo.suffix().compare("mp3", Qt::CaseInsensitive);
-       int type2=fileInfo.suffix().compare("wav", Qt::CaseInsensitive);
-       int type3=fileInfo.suffix().compare("mid", Qt::CaseInsensitive);
-       int type4=fileInfo.suffix().compare("aif", Qt::CaseInsensitive);
+  QString type = getMetaData(QMediaMetaData::MediaType).toString();
+  qDebug() << getMetaData(QMediaMetaData::MediaType).toString()
+           << "显示音频或视频";
+  QUrl url = player_->url();
+  const QFileInfo fileInfo(url.toLocalFile());
+  int type1 = fileInfo.suffix().compare("mp3", Qt::CaseInsensitive);
+  int type2 = fileInfo.suffix().compare("wav", Qt::CaseInsensitive);
+  int type3 = fileInfo.suffix().compare("mid", Qt::CaseInsensitive);
+  int type4 = fileInfo.suffix().compare("aif", Qt::CaseInsensitive);
 
-           //playAudio();
+  // playAudio();
 
-        if(type1==0||type2==0||type=="audio"||type3==0||type4==0)
-       {
-           playAudio();
-       }
-        else playVideo();
+  if (type1 == 0 || type2 == 0 || type == "audio" || type3 == 0 || type4 == 0) {
+    playAudio();
+  } else
+    playVideo();
 }
 
 void PlayerController::playVideo() {
@@ -204,30 +219,32 @@ void PlayerController::playAudio() {
   frameData->setIsVideo(false);
   //专辑图片展示
   auto metadata = player_->metaData();
-     QString name=metadata.value(QMediaMetaData::Title).toString();
-     QString artist=metadata.value(QMediaMetaData::Author).toString();
-     QString album=getMetaMes(QMediaMetaData::AlbumTitle).toString();
-     player_->ui()->name->setText(name);
-     player_->ui()->album->setText(album);
-     player_->ui()->artist->setText(artist);
-     QImage img=metadata.value(QMediaMetaData::ThumbnailImage).value<QImage>();
-     QPixmap pixmap = QPixmap::fromImage(img);
-     QPixmap fitpixmap = pixmap.scaled(150, 150, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-     player_->ui()->img->setScaledContents(true);
-     player_->ui()->img->setPixmap(fitpixmap);
+  QString name = metadata.value(QMediaMetaData::Title).toString();
+  QString artist = metadata.value(QMediaMetaData::Author).toString();
+  QString album = getMetaData(QMediaMetaData::AlbumTitle).toString();
+  player_->ui()->name->setText(name);
+  player_->ui()->album->setText(album);
+  player_->ui()->artist->setText(artist);
+  QImage img = metadata.value(QMediaMetaData::ThumbnailImage).value<QImage>();
+  QPixmap pixmap = QPixmap::fromImage(img);
+  QPixmap fitpixmap =
+      pixmap.scaled(150, 150, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+  player_->ui()->img->setScaledContents(true);
+  player_->ui()->img->setPixmap(fitpixmap);
 
-     if(name=="") player_->ui()->name->setText("Untitled");
-     if(artist=="") player_->ui()->artist->setText("Unknown");
-     if(album=="")    player_->ui()->album->setText("Unknown");
-     if(img.isNull()) {
-         QImage *img = new QImage;
-         img->load(":/images/2.jpg");
-         QPixmap pixmap = QPixmap::fromImage(*img);
-         QPixmap fitpixmap = pixmap.scaled(150, 150, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-         player_->ui()->img->setScaledContents(true);
-         player_->ui()->img->setPixmap(fitpixmap);
-     }
-     player_->ui()->stacked_widget->setCurrentWidget(player_->ui()->audioWidget);
+  if (name == "") player_->ui()->name->setText("Untitled");
+  if (artist == "") player_->ui()->artist->setText("Unknown");
+  if (album == "") player_->ui()->album->setText("Unknown");
+  if (img.isNull()) {
+    QImage *img = new QImage;
+    img->load(":/images/2.jpg");
+    QPixmap pixmap = QPixmap::fromImage(*img);
+    QPixmap fitpixmap = pixmap.scaled(150, 150, Qt::IgnoreAspectRatio,
+                                      Qt::SmoothTransformation);
+    player_->ui()->img->setScaledContents(true);
+    player_->ui()->img->setPixmap(fitpixmap);
+  }
+  player_->ui()->stacked_widget->setCurrentWidget(player_->ui()->audioWidget);
 }
 
 void PlayerController::addMediaItem(QUrl url) {
@@ -255,10 +272,9 @@ void PlayerController::onChangeDuration() {
 void PlayerController::onClickPlay() {
   qDebug() << "clicked: play";
   bool playing = player_->state() == QMediaPlayer::PlayingState;
-  qDebug() << !playing;
   emit playing ? pause() : play();
   player_->setButtonPlayIcon(playing);
-  playing ? mediaList->playCurrMedia() : mediaList->stopCurrMedia();
+  mediaList->playStop(playing);
   // default values of artist and title will be "Untitled" and "V/A"
   auto metadata = player_->metaData();
   auto artist = metadata.value(QMediaMetaData::AlbumArtist).toString();
@@ -298,13 +314,13 @@ void PlayerController::onClickNext() {
 }
 
 /**
- * @brief Handler called when the `info` button is clicked. It gets the metadata
+ * @brief Handler called when the `info` button is clicked. It gets the metaData
  * of the media.
- * @todo It just print the metadata of the media file to debug stream for now.
+ * @todo It just print the metaData of the media file to debug stream for now.
  */
 void PlayerController::onClickInfo() {
   qDebug() << "clicked: info";
-  qDebug() << "media metadata:";
+  qDebug() << "media metaData:";
   auto metaData = player_->metaData();
   auto m = MetaData(metaData);
   player_->addFloatTable(player_->ui()->info, m.toPrettyString());
@@ -357,6 +373,10 @@ void PlayerController::atEnd() {
     //    player_->setButtonPlayIcon(!player_->loop());
     mediaList->onNextMedia();
   }
+  if (player_->mediaPlayer()->mediaStatus() == QMediaPlayer::LoadedMedia) {
+    qDebug() << "LOADED!";
+    mediaList->insertToDatabase(player_->mediaPlayer()->source());
+  }
 }
 
 void PlayerController::onTimerStart() {
@@ -374,7 +394,7 @@ void PlayerController::onTimerEnd() {
 
 void PlayerController::onProgressMouseOn(const double per) {
   //获取目标时间
-  int target = per * getMetaMes(QMediaMetaData::Duration).toInt();
+  int target = per * getMetaData(QMediaMetaData::Duration).toInt();
   qDebug() << "hover time:" << target;
   player_->setFramePos(per);
   frameData->GetTargetFrameImage(target);
@@ -405,7 +425,7 @@ void PlayerController::onChangeCurrMedia(QUrl url) {
   player_->setMediaUrl(url);
 }
 
-void PlayerController::showInitWidget(){
-    player_->ui()->stacked_widget->setCurrentWidget(player_->ui()->initWidget);
+void PlayerController::showInitWidget() {
+  player_->ui()->stacked_widget->setCurrentWidget(player_->ui()->initWidget);
 }
 #pragma endregion

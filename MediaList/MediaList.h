@@ -1,5 +1,5 @@
-﻿/*
- * @file
+﻿/**
+ * @file MediaList.h
  * @author Mikra Selene
  * @version
  * @date
@@ -25,6 +25,7 @@
 #ifndef EUTERPE_MEDIALIST_MEDIALIST_H_
 #define EUTERPE_MEDIALIST_MEDIALIST_H_
 
+#include "../MetaData/MetaData.h"
 #include "../Player/GetFrameData.h"
 #include "../Player/Player.h"
 #include "MediaItemBox.h"
@@ -32,28 +33,21 @@
 
 class MediaList : public QObject {
   Q_OBJECT
- private:
-  PlayOrder playOrder_;
-  QPointer<Player> player_;
-  QPointer<QMediaPlayer> mediaPlayer_;
-  QList<QPointer<MediaItemBox>> mediaList_;
-  QPointer<MediaItemBox> currMediaItem_;
-  QPointer<MediaListSql> database_;
-
-  int currIndex;
-
-  void checkCurrMedia(QUrl url);
+ public:
+  QSharedPointer<MediaListSql> database_;
 
  public:
-  explicit MediaList(QPointer<Player> player_);
-  int findMediaItem(QUrl url);
-  void addMediaItemBox(QPointer<MediaItemBox> mediaItemBox);
-  void importMedia(const QUrl& url);
-  void playCurrMedia();
-  void stopCurrMedia();
+  explicit MediaList(const QPointer<Player>& player_);
+  ~MediaList() override = default;
 
- private:
-  void initDatabase();
+  void insertToDatabase(const QUrl& url);
+  void addMediaItemBox(const QUrl& url, const QString& author,
+                       const QString& title);
+  void importMedia(const QUrl& url);
+  void playStop(bool play);
+
+  void playPrevMedia();
+  void playNextMedia();
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "NotImplementedFunctions"
@@ -61,17 +55,31 @@ class MediaList : public QObject {
   void play();
   void pause();
   void stop();
-  void changeCurrMedia(QUrl url);
-    void endMedialist();
+  void changeCurrentMedia(const QUrl& url);
+  void endOfMediaList();
 #pragma clang diagnostic pop
-
- private slots:
-  void onChangeMetaData();
-  void deleteMedia(QUrl url);
 
  public slots:
   void onChangePlayOrder();
   void onNextMedia();
+  void onChangeMetaData();
+ private slots:
+
+  void onRemoveMedia(const QUrl& url);
+
+ private:
+  auto findMedia(const QUrl& url) -> QList<QPointer<MediaItemBox>>::iterator;
+  void checkCurrentMedia(const QUrl& url);
+  void initDatabase();
+
+ private:
+  PlayOrder playOrder_;
+  QPointer<Player> player_;
+  QPointer<QMediaPlayer> mediaPlayer_;
+
+  qsizetype currentIndex_;
+  QPointer<MediaItemBox> currentMediaItem_;
+  QList<QPointer<MediaItemBox>> mediaList_;
 };
 
 #endif  // EUTERPE_MEDIALIST_MEDIALIST_H_

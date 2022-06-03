@@ -66,20 +66,20 @@ void MediaItemBox::setMetaData(QMediaMetaData data) {
 void MediaItemBox::setMediaUrl(const QUrl &newMedia_url) {
   media_url_ = newMedia_url;
 }
-QUrl MediaItemBox::getMediaUrl() { return media_url_; }
+QUrl MediaItemBox::getMediaUrl() const { return media_url_; }
 
-void MediaItemBox::setBtnPlay(bool play) {
-  qDebug() << "setBtnPlay" << play;
+void MediaItemBox::setButtonPlay(bool play) {
+  qDebug() << "setButtonPlay" << play;
   ui_->btnPlay->setIcon(
       QIcon(play ? ":/images/circle-play.svg" : ":/images/circle-pause.svg"));
 }
 
 void MediaItemBox::setActive(bool active) {
-  QString color = active ? "background-color: #f8f8f8" : "";
+  QString color = active ? "background-color: #E5E5E5" : "";
   this->setStyleSheet(color);
   if (!active) {
     isPlaying = false;
-    setBtnPlay(!isPlaying);
+    setButtonPlay(!isPlaying);
   } else {
     emit pause();
   }
@@ -87,7 +87,7 @@ void MediaItemBox::setActive(bool active) {
 
 void MediaItemBox::onClickPlay() {
   qDebug() << "onClickPlay" << isPlaying;
-  setBtnPlay(isPlaying);
+  setButtonPlay(isPlaying);
   if (isPlaying) {
     emit pause();
   } else {

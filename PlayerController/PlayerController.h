@@ -36,12 +36,12 @@ class PlayerController : public QWidget {
   Q_OBJECT
 
  public:
-  explicit PlayerController(const QPointer<Player> &player);
+  explicit PlayerController(const QPointer<Player>& player);
   ~PlayerController() override = default;
 
   //整理获取元数据
   //获取单一元数据
-  QVariant getMetaMes(QMediaMetaData::Key key);
+  auto getMetaData(const QMediaMetaData::Key& key) -> QVariant;
 
   // 初始化媒体库列表
   void initMediaList();
@@ -58,6 +58,7 @@ class PlayerController : public QWidget {
   void info();
   void btn_volume();
   void btn_play_order();
+  void box();
   void changeRate(qreal rate);
   void changeProgress(qint64 progress);
   void changeVolume(qreal volume);
@@ -82,12 +83,12 @@ class PlayerController : public QWidget {
   void onProgressMouseOn(const double);
   void showFrameData(QImage image);
   //快捷键使用部分
-  void setVolumeValue(const int add);
-  void setProgressValue(const int add);
+  void setVolumeValue(const int& add);
+  void setProgressValue(const int& add);
   void onChangeMetaData();
   void onChangeDuration();
   void onChangeCurrMedia(QUrl url);
-    void showInitWidget();
+  void showInitWidget();
 
  private:
   //音视频控制

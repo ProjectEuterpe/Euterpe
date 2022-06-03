@@ -31,13 +31,20 @@
 MetaData::MetaData(QMediaMetaData metaData) {
   this->metaData_ = metaData;
   this->metaData_.remove(QMediaMetaData::Comment);  // netease music sucks.
-  auto jsonObj = QJsonObject{};
+  auto jsonObj = QJsonObject();
   for (auto k : this->metaData_.keys()) {
     jsonObj.insert(QMediaMetaData::metaDataKeyToString(k),
                    QJsonValue::fromVariant(metaData[k]));
   }
-  this->json_ = QJsonDocument{jsonObj};
+  this->json_ = QJsonDocument(jsonObj);
 }
+
+MetaData::MetaData(const QString& json) {
+  this->metaData_ = {};
+  this->json_ = QJsonDocument::fromJson(json.toUtf8());
+}
+
+auto MetaData::get(const QString& key) -> QVariant { return this->json_[key]; }
 
 /**
  * @brief To Qt JSON object.
@@ -84,7 +91,7 @@ auto MetaData::toJsonStringIndented() const -> QString {
  * ".
  */
 auto MetaData::toPrettyString() const -> QString {
-  auto result = QString{};
+  auto result = QString();
   for (auto k : this->metaData_.keys()) {
     auto key = QMediaMetaData::metaDataKeyToString(k);
     result.append(key + ": " + this->json_[key].toString() + "\n");

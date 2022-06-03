@@ -1,5 +1,5 @@
-/*
- * @file
+/**
+ * @file MediaListSql.h
  * @author Mikra Selene
  * @version
  * @date
@@ -22,42 +22,35 @@
  * this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-//
-// Created by Mikra Selene on 2022/5/27.
-//
-
 #ifndef EUTERPE_MEDIALIST_MEDIALISTSQL_H_
 #define EUTERPE_MEDIALIST_MEDIALISTSQL_H_
 
-#include <QJsonObject>
 #include <QSqlTableModel>
-#include <QString>
 #include <QtSql>
-#include <memory>
 
 struct ConnectionArgs {
-  QString driver_name;
-  QString database_name;
-  QString user_name;
+  QString driverName;
+  QString databaseName;
+  QString userName;
   QString password;
-  QString host_name;
+  QString hostName;
   qint32 port;
 };
 
 struct MediaData {
   QString md5;
-  QString media_name;
-  QString media_path;
+  QString mediaName;
+  QString mediaPath;
   QString label;
-  QString metadata;
-  qint32 play_timestamp;
-  qint32 add_timestamp;
+  QString metaData;
+  qint64 playTimestamp;
+  qint64 addTimestamp;
 };
 
 enum class MediaDataEnum {
-  MD5 = 0,
+  MEDIA_PATH = 0,
   MEDIA_NAME = 1,
-  MEDIA_PATH = 2,
+  MD5 = 2,
   LABEL = 3,
   METADATA = 4,
   PLAY_TIMESTAMP = 5,
@@ -65,42 +58,49 @@ enum class MediaDataEnum {
 };
 
 enum class SortEnum { DESC, ASC };
+
 #define nd [[nodiscard]]
 #define mu [[maybe_unused]]
 
 class MediaListSql {
  public:
-  mu explicit MediaListSql(const std::shared_ptr<ConnectionArgs> &);
-  mu explicit MediaListSql(const QByteArray &);  // json format
+  mu explicit MediaListSql(const QSharedPointer<ConnectionArgs> &args);
+  mu explicit MediaListSql(const QByteArray &json);  // json format
   ~MediaListSql() = default;
 
   auto connect() -> void;
-  nd auto table() const -> QList<std::shared_ptr<MediaData>>;
-  nd auto sort(MediaDataEnum, SortEnum) const
-      -> QList<std::shared_ptr<MediaData>>;
-  nd auto find(MediaDataEnum, const QVariant &) const
-      -> QList<std::shared_ptr<MediaData>>;
-  void insert(const std::shared_ptr<MediaData> &) const;
-  void remove(const std::shared_ptr<MediaData> &) const;
+
+  nd auto table() const -> QList<QSharedPointer<MediaData>>;
+  nd auto sort(MediaDataEnum dataEnum, SortEnum sortEnum) const
+      -> QList<QSharedPointer<MediaData>>;
+  nd auto find(MediaDataEnum dataEnum, const QVariant &v) const
+      -> QList<QSharedPointer<MediaData>>;
+  void insert(const QSharedPointer<MediaData> &row) const;
+  void remove(const QSharedPointer<MediaData> &row) const;
+  void update(const QSharedPointer<MediaData> &row, MediaDataEnum dataEnum,
+              const QVariant &v) const;
 
  public:
-  nd auto query(const QString &) const -> QList<std::shared_ptr<MediaData>>;
+  nd auto query(const QString &) const -> QList<QSharedPointer<MediaData>>;
 
   QSqlDatabase db_;
-  std::shared_ptr<ConnectionArgs> connectionArgs_;
+  QSharedPointer<ConnectionArgs> connectionArgs_;
   QMap<MediaDataEnum, QString> mediaDataEnum_ = QMap<MediaDataEnum, QString>({
       {MediaDataEnum::MD5, "md5"},
-      {MediaDataEnum::MEDIA_NAME, "media_name"},
-      {MediaDataEnum::MEDIA_PATH, "media_path"},
+      {MediaDataEnum::MEDIA_NAME, "mediaName"},
+      {MediaDataEnum::MEDIA_PATH, "mediaPath"},
       {MediaDataEnum::LABEL, "label"},
-      {MediaDataEnum::METADATA, "metadata"},
-      {MediaDataEnum::PLAY_TIMESTAMP, "play_timestamp"},
-      {MediaDataEnum::ADD_TIMESTAMP, "add_timestamp"},
+      {MediaDataEnum::METADATA, "metaData"},
+      {MediaDataEnum::PLAY_TIMESTAMP, "playTimestamp"},
+      {MediaDataEnum::ADD_TIMESTAMP, "addTimestamp"},
   });
   QMap<SortEnum, QString> sortEnum_ = QMap<SortEnum, QString>({
       {SortEnum::DESC, "desc"},
       {SortEnum::ASC, "asc"},
   });
 };
+
+#undef nd
+#undef mu
 
 #endif  // EUTERPE_MEDIALIST_MEDIALISTSQL_H_

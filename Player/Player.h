@@ -26,14 +26,18 @@
 #define EUTERPE__PLAYER_H_
 
 #include <QAudioOutput>
+#include <QDragEnterEvent>
+#include <QDropEvent>
 #include <QFileDialog>
 #include <QMediaMetaData>
 #include <QMediaPlayer>
+#include <QMimeData>
 #include <QPointer>
+#include <QStackedWidget>
 #include <QTime>
+#include <QUrl>
 #include <QVariant>
 #include <QWidget>
-#include <QStackedWidget>
 
 #include "../MetaData/MetaDataFloatTable.h"
 
@@ -52,10 +56,14 @@ class Player : public QWidget {
   ~Player() override;
 
  public:
+  void initMedia(const QUrl &url);
+
   void setLoopLock(bool lock);
   void setProgressSliderMax(const qint32 &max);
   void setButtonPlayIcon(bool play);
   void setButtonVolumeIcon(bool unmute);
+  void setButtonPrevIcon();
+  void setButtonNextIcon();
   void setPlayOrderIcon(const PlayOrder &type);
 
   void setIsFullScreenIcon();
@@ -87,7 +95,7 @@ class Player : public QWidget {
   nd auto sliderProgress() const -> qint64;
   nd auto comboBoxRate() const -> qreal;
   nd bool endOfMedia() const;
-  nd auto url()const ->QUrl;
+  nd auto url() const -> QUrl;
 
  public slots:
   //定时关闭展示的frame
@@ -108,9 +116,10 @@ class Player : public QWidget {
   void onClickOpen();
   void onClickFullScreen();
   bool eventFilter(QObject *, QEvent *) override;
+  void dragEnterEvent(QDragEnterEvent *e) override;
+  void dropEvent(QDropEvent *e) override;
 
  private:
-  void initMedia(const QUrl &url);
   void updateTimeLabel(qint64 time);
 
  private:

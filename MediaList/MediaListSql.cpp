@@ -1,5 +1,5 @@
-/*
- * @file
+/**
+ * @file MediaListSql.cpp
  * @author Mikra Selene
  * @version
  * @date
@@ -25,80 +25,87 @@
 #include "MediaListSql.h"
 
 /**
- * @brief
- * @param args
+ * @brief MediaListSql.
+ * @param args: Connection args.
  */
-MediaListSql::MediaListSql(const std::shared_ptr<ConnectionArgs> &args) {
-  this->connectionArgs_ = args;
-}
+MediaListSql::MediaListSql(const QSharedPointer<ConnectionArgs> &args)
+    : connectionArgs_(args) {}
 
 /**
- * @brief
- * @param json
+ * @brief MediaListSql.
+ * @param json: Connection args in json format.
  */
+MediaListSql::MediaListSql(const QByteArray &json) {
+  QJsonParseError error;
+  auto document = QJsonDocument::fromJson(json, &error);
+  if (!document.isNull() && error.error == QJsonParseError::NoError) {
+    if (document.isObject()) {
+      auto object = document.object();
 #define SET_STRING(key)                              \
   if (object.contains(#key)) {                       \
-    QJsonValue value = object.value(#key);           \
+    auto value = object.value(#key);                 \
     if (value.isString()) {                          \
       this->connectionArgs_->key = value.toString(); \
     }                                                \
   }
 #define SET_INT(key)                              \
   if (object.contains(#key)) {                    \
-    QJsonValue value = object.value(#key);        \
+    auto value = object.value(#key);              \
     if (value.isDouble()) {                       \
       this->connectionArgs_->key = value.toInt(); \
     }                                             \
   }
-MediaListSql::MediaListSql(const QByteArray &json) {
-  QJsonParseError error;
-  QJsonDocument document = QJsonDocument::fromJson(json, &error);
-  if (!document.isNull() && error.error == QJsonParseError::NoError) {
-    if (document.isObject()) {
-      QJsonObject object = document.object();
-      SET_STRING(driver_name)
-      SET_STRING(database_name)
-      SET_STRING(user_name)
+      SET_STRING(driverName)
+      SET_STRING(databaseName)
+      SET_STRING(userName)
       SET_STRING(password)
-      SET_STRING(host_name)
+      SET_STRING(hostName)
       SET_INT(port)
+#undef SET_STRING
+#undef SET_INT
     }
   }
 }
-#undef SET_STRING
-#undef SET_INT
 
+/**
+ * @brief Connect to a database using connection args.
+ */
 void MediaListSql::connect() {
   auto args = this->connectionArgs_;
-  this->db_ = QSqlDatabase::addDatabase(args->driver_name,
-                                        QString(args->database_name));
-  this->db_.setDatabaseName(args->database_name);
-  this->db_.setHostName(args->host_name);
+  this->db_ =
+      QSqlDatabase::addDatabase(args->driverName, QString(args->databaseName));
+  this->db_.setDatabaseName(args->databaseName);
+  this->db_.setHostName(args->hostName);
   this->db_.setPort(args->port);
 
-  if (!this->db_.open(args->user_name, args->password)) {
+  if (!this->db_.open(args->userName, args->password)) {
     this->db_ = QSqlDatabase();
-    QSqlDatabase::removeDatabase(QString(args->database_name));
+    QSqlDatabase::removeDatabase(QString(args->databaseName));
   }
 
   // std::ignore = this->query("drop table Media");
   std::ignore = this->query(
       "create table Media ("
-      "media_path varchar(255) primary key,"
-      "media_name varchar(255),"
+      "mediaPath varchar(255) primary key,"
+      "mediaName varchar(255),"
       "md5 varchar(255),"
       "label varchar(255),"
-      "metadata varchar(255),"
-      "play_timestamp int,"
-      "add_timestamp int)");
+      "metaData varchar(2048),"
+      "playTimestamp bigint,"
+      "addTimestamp bigint)");
 }
 
+/**
+ * @brief A SQL query.
+ * @param sql: SQL query.
+ * @return Media list (if possible).
+ */
 auto MediaListSql::query(const QString &sql) const
-    -> QList<std::shared_ptr<MediaData>> {
+    -> QList<QSharedPointer<MediaData>> {
   QSqlQuery query(sql, this->db_);
-  auto mediaList = QList<std::shared_ptr<MediaData>>();
+  auto mediaList = QList<QSharedPointer<MediaData>>();
   while (query.next()) {
-    auto result = std::make_shared<MediaData>(MediaData{
+    auto result = QSharedPointer<MediaData>(new MediaData{
         query.value(qint32(MediaDataEnum::MD5)).toString(),
         query.value(qint32(MediaDataEnum::MEDIA_NAME)).toString(),
         query.value(qint32(MediaDataEnum::MEDIA_PATH)).toString(),
@@ -112,20 +119,36 @@ auto MediaListSql::query(const QString &sql) const
   return mediaList;
 }
 
-auto MediaListSql::table() const -> QList<std::shared_ptr<MediaData>> {
+/**
+ * @brief Get the table.
+ * @return Whole table (media database).
+ */
+auto MediaListSql::table() const -> QList<QSharedPointer<MediaData>> {
   return this->query("select * from Media");
 }
 
+/**
+ * @brief Sort the table.
+ * @param key: Sort by which key.
+ * @param how: Sort in ascending order or in descending order.
+ * @return Result.
+ */
 auto MediaListSql::sort(MediaDataEnum key, SortEnum how) const
-    -> QList<std::shared_ptr<MediaData>> {
+    -> QList<QSharedPointer<MediaData>> {
   auto sortString =
       QString("select * from Media order by %1 %2")
           .arg(this->mediaDataEnum_.value(key), this->sortEnum_.value(how));
   return this->query(sortString);
 }
 
+/**
+ * @brief Find rows.
+ * @param key: Find in which key.
+ * @param value: Find by what value.
+ * @return Result.
+ */
 auto MediaListSql::find(MediaDataEnum key, const QVariant &value) const
-    -> QList<std::shared_ptr<MediaData>> {
+    -> QList<QSharedPointer<MediaData>> {
   bool keyIsInt = key == MediaDataEnum::PLAY_TIMESTAMP ||
                   key == MediaDataEnum::ADD_TIMESTAMP;
   auto findString =
@@ -135,17 +158,43 @@ auto MediaListSql::find(MediaDataEnum key, const QVariant &value) const
   return this->query(findString);
 }
 
-void MediaListSql::insert(const std::shared_ptr<MediaData> &row) const {
+/**
+ * @brief Insert a row.
+ * @param row: The row to be inserted.
+ */
+void MediaListSql::insert(const QSharedPointer<MediaData> &row) const {
   auto insertString =
       QString("insert into Media values ('%1\','%2\','%3','%4','%5',%6,%7)")
-          .arg(row->media_path, row->media_name, row->md5, row->label,
-               row->metadata, QString::number(row->play_timestamp),
-               QString::number(row->add_timestamp));
+          .arg(row->mediaPath, row->mediaName, row->md5, row->label,
+               row->metaData, QString::number(row->playTimestamp),
+               QString::number(row->addTimestamp));
   std::ignore = this->query(insertString);
 }
 
-void MediaListSql::remove(const std::shared_ptr<MediaData> &row) const {
+/**
+ * @brief Remove a row.
+ * @param row: The row to be removed.
+ */
+void MediaListSql::remove(const QSharedPointer<MediaData> &row) const {
   auto removeString =
-      QString("delete from Media where media_name='%1'").arg(row->media_path);
+      QString("delete from Media where mediaPath='%1'").arg(row->mediaPath);
   std::ignore = this->query(removeString);
+}
+
+/**
+ * @brief Update a key's value of a row to given value.
+ * @param row: The row to be updated.
+ * @param key: The key to be updated.
+ * @param value: The value.
+ */
+void MediaListSql::update(const QSharedPointer<MediaData> &row,
+                          MediaDataEnum key, const QVariant &value) const {
+  bool keyIsInt = key == MediaDataEnum::PLAY_TIMESTAMP ||
+                  key == MediaDataEnum::ADD_TIMESTAMP;
+  auto updateString =
+      QString("update Media set %1=%2 where mediaPath='%3'")
+          .arg(this->mediaDataEnum_.value(key),
+               QString(keyIsInt ? "%1" : "'%1'").arg(value.toString()))
+          .arg(row->mediaPath);
+  std::ignore = this->query(updateString);
 }
