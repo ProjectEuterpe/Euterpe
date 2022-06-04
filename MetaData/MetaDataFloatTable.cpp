@@ -39,12 +39,12 @@ void MetaDataFloatTable::setPosition(const qint32 &x, const qint32 &y) {
                     this->ui_->textEdit->height());
 }
 
-void MetaDataFloatTable::setText(const QString &text) {
-  this->ui_->textEdit->setText(
-      text.isEmpty() ? tr("You haven't selected a media to play ~") : text);
-}
-
 void MetaDataFloatTable::setImage(const QImage &image) {
   this->ui_->textEdit->setText(tr(""));
   this->ui_->textEdit->textCursor().insertImage(image);
+}
+
+void MetaDataFloatTable::setText(const QString &text) {
+  this->ui_->textEdit->setText(
+      text.isEmpty() ? tr("You haven't selected a media to play ~") : text);
 }

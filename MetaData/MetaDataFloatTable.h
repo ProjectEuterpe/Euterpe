@@ -42,8 +42,8 @@ class MetaDataFloatTable : public QWidget {
   ~MetaDataFloatTable() override;
 
   void setPosition(const qint32 &x, const qint32 &y);
-  void setText(const QString &text);
   void setImage(const QImage &image);
+  void setText(const QString &text);
 
  private:
   MetaDataFloatTableUIPtr ui_;
