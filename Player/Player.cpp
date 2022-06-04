@@ -201,7 +201,6 @@ void Player::addFloatTable(QPushButton* info, QString str, int posType) {
 }
 
 void Player::setFrame(QImage image) {
-
   qDebug() << "set frame_";
   frame_->setImage(
       image.scaled(195, 115, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));

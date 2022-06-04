@@ -33,7 +33,7 @@ PlayerController::PlayerController(const QPointer<Player> &player) {
   this->player_ = player;
   auto ui = this->player_->ui();
   this->shortcut_ = QPointer<PlayerShortcut>(new PlayerShortcut(player));
-
+  initMediaList();
   // connect shortcuts
 #define shortcut_connection(signal, slot) \
   connect(shortcut_, &PlayerShortcut::signal, this, &PlayerController::slot)
@@ -82,8 +82,8 @@ PlayerController::PlayerController(const QPointer<Player> &player) {
   media_control_connection(stop, &QMediaPlayer::stop);
 
   // todo: connect to MediaList
-  connect(this, &PlayerController::prev, mediaList, &MediaList::playPrevMedia);
-  connect(this, &PlayerController::next, mediaList, &MediaList::playNextMedia);
+  connect(this, &PlayerController::sequencePrevNext, mediaList,
+          &MediaList::playPrevNextMedia);
   // todo: connect to MetaData
   connect(this, &PlayerController::info, this, []() -> void {});
 
@@ -115,11 +115,10 @@ PlayerController::PlayerController(const QPointer<Player> &player) {
   // showFrameTimer->setSingleShot(true);
   // connect(showFrameTimer, &QTimer::timeout, player_,
   // &Player::closeFrameShow);
-  connect(player_, &Player::showFrameSignal,
-   this,   &PlayerController::onProgressMouseOn);
+  connect(player_, &Player::showFrameSignal, this,
+          &PlayerController::onProgressMouseOn);
 
   // 初始化媒体库列表
-  initMediaList();
 
   // 新导入媒体 addMedia
   connect(player_, &Player::addMedia, this, &PlayerController::addMediaItem);
@@ -127,6 +126,7 @@ PlayerController::PlayerController(const QPointer<Player> &player) {
   connect(mediaList, &MediaList::changeCurrentMedia, this,
           &PlayerController::onChangeCurrMedia);
   // 播放暂停
+  connect(mediaList, &MediaList::play, player_, &Player::setMediaUrl);
   connect(mediaList, &MediaList::play, player_, &Player::playMedia);
   connect(mediaList, &MediaList::play, this, &PlayerController::checkUrl);
   connect(mediaList, &MediaList::pause, player_, &Player::pauseMedia);
@@ -303,7 +303,7 @@ void PlayerController::onClickStop() {
  */
 void PlayerController::onClickPrev() {
   qDebug() << "clicked: prev";
-  emit prev();
+  emit sequencePrevNext(Sequence::Prev);
 }
 
 /**
@@ -311,7 +311,7 @@ void PlayerController::onClickPrev() {
  */
 void PlayerController::onClickNext() {
   qDebug() << "clicked: next";
-  emit next();
+  emit sequencePrevNext(Sequence::Next);
 }
 
 /**
@@ -389,8 +389,7 @@ void PlayerController::onTimerStart() {
 void PlayerController::onTimerEnd() {
   //隐藏
   qDebug() << "TimeOut";
-  if (player_->isFullScreen())
-      player_->ui()->controlPad->setHidden(true);
+  if (player_->isFullScreen()) player_->ui()->controlPad->setHidden(true);
   showBarTimer->stop();
 }
 
@@ -403,7 +402,6 @@ void PlayerController::onProgressMouseOn(const double per) {
 }
 
 void PlayerController::showFrameData(QImage image) { player_->setFrame(image); }
-
 
 /**
  * @brief Handler called when the value of `btn_volume` button is clicked.

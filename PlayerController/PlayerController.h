@@ -53,8 +53,7 @@ class PlayerController : public QWidget {
   void play();
   void pause();
   void stop();
-  void prev();
-  void next();
+  void sequencePrevNext(const Sequence& seq);
   void info();
   void btn_volume();
   void btn_play_order();

@@ -1,7 +1,7 @@
 /**
  * @file MediaListSql.cpp
  * @author Mikra Selene
- * @version
+ * @version OK
  * @date
  *
  * @section LICENSE
@@ -96,30 +96,6 @@ void MediaListSql::connect() {
 }
 
 /**
- * @brief A SQL query.
- * @param sql: SQL query.
- * @return Media list (if possible).
- */
-auto MediaListSql::query(const QString &sql) const
-    -> QList<QSharedPointer<MediaData>> {
-  QSqlQuery query(sql, this->db_);
-  auto mediaList = QList<QSharedPointer<MediaData>>();
-  while (query.next()) {
-    auto result = QSharedPointer<MediaData>(new MediaData{
-        query.value(qint32(MediaDataEnum::MD5)).toString(),
-        query.value(qint32(MediaDataEnum::MEDIA_NAME)).toString(),
-        query.value(qint32(MediaDataEnum::MEDIA_PATH)).toString(),
-        query.value(qint32(MediaDataEnum::LABEL)).toString(),
-        query.value(qint32(MediaDataEnum::METADATA)).toString(),
-        query.value(qint32(MediaDataEnum::PLAY_TIMESTAMP)).toInt(),
-        query.value(qint32(MediaDataEnum::ADD_TIMESTAMP)).toInt(),
-    });
-    mediaList.push_back(result);
-  }
-  return mediaList;
-}
-
-/**
  * @brief Get the table.
  * @return Whole table (media database).
  */
@@ -133,7 +109,7 @@ auto MediaListSql::table() const -> QList<QSharedPointer<MediaData>> {
  * @param how: Sort in ascending order or in descending order.
  * @return Result.
  */
-auto MediaListSql::sort(MediaDataEnum key, SortEnum how) const
+auto MediaListSql::sort(const MediaDataEnum &key, const SortEnum &how) const
     -> QList<QSharedPointer<MediaData>> {
   auto sortString =
       QString("select * from Media order by %1 %2")
@@ -147,7 +123,7 @@ auto MediaListSql::sort(MediaDataEnum key, SortEnum how) const
  * @param value: Find by what value.
  * @return Result.
  */
-auto MediaListSql::find(MediaDataEnum key, const QVariant &value) const
+auto MediaListSql::find(const MediaDataEnum &key, const QVariant &value) const
     -> QList<QSharedPointer<MediaData>> {
   bool keyIsInt = key == MediaDataEnum::PLAY_TIMESTAMP ||
                   key == MediaDataEnum::ADD_TIMESTAMP;
@@ -188,7 +164,8 @@ void MediaListSql::remove(const QSharedPointer<MediaData> &row) const {
  * @param value: The value.
  */
 void MediaListSql::update(const QSharedPointer<MediaData> &row,
-                          MediaDataEnum key, const QVariant &value) const {
+                          const MediaDataEnum &key,
+                          const QVariant &value) const {
   bool keyIsInt = key == MediaDataEnum::PLAY_TIMESTAMP ||
                   key == MediaDataEnum::ADD_TIMESTAMP;
   auto updateString =
@@ -197,4 +174,28 @@ void MediaListSql::update(const QSharedPointer<MediaData> &row,
                QString(keyIsInt ? "%1" : "'%1'").arg(value.toString()))
           .arg(row->mediaPath);
   std::ignore = this->query(updateString);
+}
+
+/**
+ * @brief A SQL query.
+ * @param sql: SQL query.
+ * @return Media list (if possible).
+ */
+auto MediaListSql::query(const QString &sql) const
+    -> QList<QSharedPointer<MediaData>> {
+  QSqlQuery query(sql, this->db_);
+  auto mediaList = QList<QSharedPointer<MediaData>>();
+  while (query.next()) {
+    auto result = QSharedPointer<MediaData>(new MediaData{
+        query.value(qint32(MediaDataEnum::MD5)).toString(),
+        query.value(qint32(MediaDataEnum::MEDIA_NAME)).toString(),
+        query.value(qint32(MediaDataEnum::MEDIA_PATH)).toString(),
+        query.value(qint32(MediaDataEnum::LABEL)).toString(),
+        query.value(qint32(MediaDataEnum::METADATA)).toString(),
+        query.value(qint32(MediaDataEnum::PLAY_TIMESTAMP)).toInt(),
+        query.value(qint32(MediaDataEnum::ADD_TIMESTAMP)).toInt(),
+    });
+    mediaList.push_back(result);
+  }
+  return mediaList;
 }

@@ -184,7 +184,7 @@
 			  <number>0</number>
 			</property>
 			<item>
-			  <widget class="QPushButton" name="btnPlay">
+			  <widget class="QPushButton" name="play">
 				<property name="sizePolicy">
 				  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
 					<horstretch>0</horstretch>
@@ -226,7 +226,7 @@
 			  </widget>
 			</item>
 			<item>
-			  <widget class="QPushButton" name="btnInfo">
+			  <widget class="QPushButton" name="info">
 				<property name="sizePolicy">
 				  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
 					<horstretch>0</horstretch>
@@ -265,7 +265,7 @@
 			  </widget>
 			</item>
 			<item>
-			  <widget class="QPushButton" name="btnDel">
+			  <widget class="QPushButton" name="del">
 				<property name="sizePolicy">
 				  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
 					<horstretch>0</horstretch>

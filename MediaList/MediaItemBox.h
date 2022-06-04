@@ -1,7 +1,7 @@
-/*
- * @file
+/**
+ * @file MediaItemBox.h
  * @author Mikra Selene
- * @version
+ * @version OK
  * @date
  *
  * @section LICENSE
@@ -29,11 +29,13 @@
 #include <QMediaMetaData>
 #include <QMediaPlayer>
 
+#include "../MetaData/MetaData.h"
 #include "../Player/Player.h"
 
 namespace Ui {
 class MediaItemBox;
 }
+using MediaItemBoxUiPtr = Ui::MediaItemBox *;
 
 #define nd [[nodiscard]]
 #define mu [[maybe_unused]]
@@ -42,7 +44,7 @@ class MediaItemBox : public QGroupBox {
   Q_OBJECT
 
  public:
-  explicit MediaItemBox(Player *parent = nullptr);
+  explicit MediaItemBox(const QPointer<Player> &parent = Q_NULLPTR);
   ~MediaItemBox() override;
 
   mu void setMediaTitle(const QString &title);
@@ -60,19 +62,19 @@ class MediaItemBox : public QGroupBox {
   void play(QUrl url);
   void pause();
   void stop();
-  void deleteMedia(QUrl url);
+  void removeMedia(QUrl url);
 #pragma clang diagnostic pop
 
  private slots:
   void onClickPlay();
-  void onClickBtnInfo();
-  void onClickBtnDel();
+  void onClickInfo();
+  void onClickDel();
 
  private:
-  Ui::MediaItemBox *ui_;
-  QMediaMetaData metaData_;
+  MediaItemBoxUiPtr ui_;
+  QSharedPointer<MetaData> metaData_;
   QString metaDataString_;
-  Player *player_;
+  QPointer<Player> player_;
   QUrl mediaUrl_;
   bool isPlaying_;
 };

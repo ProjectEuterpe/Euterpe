@@ -1,7 +1,7 @@
 ﻿/**
  * @file MediaList.h
  * @author Mikra Selene
- * @version
+ * @version OK
  * @date
  *
  * @section LICENSE
@@ -33,29 +33,35 @@
 #include "MediaItemBox.h"
 #include "MediaListSql.h"
 
+enum class Sequence { Prev, Next };
+
+#define nd [[nodiscard]]
+
 class MediaList : public QObject {
   Q_OBJECT
 
  public:
-  explicit MediaList(const QPointer<Player>& player_);
+  explicit MediaList(const QPointer<Player>& player);
   ~MediaList() override = default;
 
-  auto databaseTable() -> QList<QSharedPointer<MediaData>>;
-  void insertToDatabase(const QUrl& url);
-  void addMediaItemBox(const QUrl& url, const QString& author,
+  nd auto databaseTable() const -> QList<QSharedPointer<MediaData>>;
+  void insertToDatabase(const QUrl& url) const;
+  void addMediaItemBox(const QUrl& url, const QString& artist,
                        const QString& title);
-  void importMedia(const QUrl& url);
+  void importMedia(const QUrl& url) const;
+  void playStop(bool play) const;
+  void playPrevNextMedia(const Sequence& seq);
 
-  void playStop(bool play);
-
+ private:
+  void initDatabase();
   void stepForward(const qint64& step);
-  void playPrevMedia();
-  void playNextMedia();
+  auto findMedia(const QUrl& url) -> QList<QPointer<MediaItemBox>>::iterator;
+  void checkCurrentMedia(const QUrl& url);
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "NotImplementedFunctions"
  signals:
-  void play();
+  void play(const QUrl& url);
   void pause();
   void stop();
   void changeCurrentMedia(const QUrl& url);
@@ -63,17 +69,12 @@ class MediaList : public QObject {
 #pragma clang diagnostic pop
 
  public slots:
-  void onChangePlayOrder();
   void onNextMedia();
-  void onChangeMetaData();
+  void onChangePlayOrder();
+
  private slots:
-
   void onRemoveMedia(const QUrl& url);
-
- private:
-  auto findMedia(const QUrl& url) -> QList<QPointer<MediaItemBox>>::iterator;
-  void checkCurrentMedia(const QUrl& url);
-  void initDatabase();
+  void onChangeMetaData();
 
  private:
   PlayOrder playOrder_;
@@ -85,5 +86,7 @@ class MediaList : public QObject {
   QPointer<MediaItemBox> currentMediaItem_;
   QList<QPointer<MediaItemBox>> mediaList_;
 };
+
+#undef nd
 
 #endif  // EUTERPE_MEDIALIST_MEDIALIST_H_

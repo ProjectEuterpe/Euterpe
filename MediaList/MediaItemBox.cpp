@@ -1,7 +1,7 @@
-/*
- * @file
+/**
+ * @file MediaItemBox.cpp
  * @author Mikra Selene
- * @version
+ * @version OK
  * @date
  *
  * @section LICENSE
@@ -26,84 +26,81 @@
 
 #include "../UI/ui_MediaItemBox.h"
 
-MediaItemBox::MediaItemBox(Player *parent)
-    : QGroupBox(parent), ui_(new Ui::MediaItemBox) {
-  ui_->setupUi(this);
-  player_ = parent;
-  isPlaying_ = false;
+#pragma region public
 
-  connect(ui_->btnPlay, &QPushButton::clicked, this,
-          &MediaItemBox::onClickPlay);
-  connect(ui_->btnInfo, &QPushButton::clicked, this,
-          &MediaItemBox::onClickBtnInfo);
-  connect(ui_->btnDel, &QPushButton::clicked, this,
-          &MediaItemBox::onClickBtnDel);
+MediaItemBox::MediaItemBox(const QPointer<Player> &parent)
+    : QGroupBox(parent.data()),
+      ui_(new Ui::MediaItemBox),
+      player_(parent),
+      isPlaying_(false) {
+  ui_->setupUi(this);
+
+#define CONNECTION_BOX(sender, slot) \
+  connect(this->ui_->sender, &QPushButton::clicked, this, &MediaItemBox::slot)
+  CONNECTION_BOX(play, onClickPlay);
+  CONNECTION_BOX(info, onClickInfo);
+  CONNECTION_BOX(del, onClickDel);
+#undef CONNECTION_BOX
 }
 
 MediaItemBox::~MediaItemBox() { delete ui_; }
 
-[[maybe_unused]] void MediaItemBox::setMediaTitle(const QString &title) {
+void MediaItemBox::setMediaTitle(const QString &title) {
   auto text = title.isEmpty() ? tr("Unknown Title") : title;
-  ui_->textTitle->setText(text);
-  ui_->textTitle->setToolTip(text);
+  this->ui_->textTitle->setText(text);
+  this->ui_->textTitle->setToolTip(text);
 }
 
 void MediaItemBox::setMediaArtist(const QString &artist) {
-  auto text = artist.isEmpty() ? "V/A" : artist;
-  ui_->textArtist->setText(text);
-  ui_->textArtist->setToolTip(text);
+  auto text = artist.isEmpty() ? tr("V/A") : artist;
+  this->ui_->textArtist->setText(text);
+  this->ui_->textArtist->setToolTip(text);
 }
 
 void MediaItemBox::setImage(const QImage &img) {}
 
 void MediaItemBox::setMetaData(const QMediaMetaData &data) {
-  metaData_ = data;
-  metaDataString_ = "";
-  for (auto k : metaData_.keys()) {
-    metaDataString_ +=
-        metaData_.metaDataKeyToString(k) + ":" + metaData_[k].toString() + '\n';
-  }
+  this->metaData_ = QSharedPointer<MetaData>(new MetaData(data));
+  this->metaDataString_ = this->metaData_->toPrettyString();
 }
 
 void MediaItemBox::setMediaUrl(const QUrl &newMedia_url) {
-  mediaUrl_ = newMedia_url;
+  this->mediaUrl_ = newMedia_url;
 }
-QUrl MediaItemBox::getMediaUrl() const { return mediaUrl_; }
 
 void MediaItemBox::setButtonPlay(bool play) {
-  qDebug() << "setButtonPlay" << play;
-  ui_->btnPlay->setIcon(
+  this->ui_->play->setIcon(
       QIcon(play ? ":/images/circle-play.svg" : ":/images/circle-pause.svg"));
 }
 
 void MediaItemBox::setActive(bool active) {
-  QString color = active ? "background-color: #E5E5E5" : "";
+  auto color = active ? "background-color: #E5E5E5" : "";
   this->setStyleSheet(color);
   if (!active) {
-    isPlaying_ = false;
-    setButtonPlay(!isPlaying_);
+    this->isPlaying_ = false;
+    this->setButtonPlay(!isPlaying_);
   } else {
-    emit pause();
+    emit this->pause();
   }
 }
+
+QUrl MediaItemBox::getMediaUrl() const { return this->mediaUrl_; }
+
+#pragma endregion
+
+#pragma region slots
 
 void MediaItemBox::onClickPlay() {
-  qDebug() << "onClickPlay" << isPlaying_;
-  setButtonPlay(isPlaying_);
-  if (isPlaying_) {
-    emit pause();
-  } else {
-    emit play(mediaUrl_);
-  }
-  isPlaying_ = !isPlaying_;
+  this->setButtonPlay(this->isPlaying_);
+  emit this->isPlaying_ ? this->pause() : this->play(this->mediaUrl_);
+  this->isPlaying_ = !this->isPlaying_;
 }
 
-void MediaItemBox::onClickBtnInfo() {
-  qDebug() << "clicked: BtnInfo";
-  player_->addFloatTable(ui_->btnInfo, metaDataString_, 1);
+void MediaItemBox::onClickInfo() {
+  // TODO: player function modify
+  this->player_->addFloatTable(this->ui_->info, this->metaDataString_, 1);
 }
 
-void MediaItemBox::onClickBtnDel() {
-  qDebug() << "clicked: BtnDel";
-  emit deleteMedia(mediaUrl_);
-}
+void MediaItemBox::onClickDel() { emit this->removeMedia(this->mediaUrl_); }
+
+#pragma endregion

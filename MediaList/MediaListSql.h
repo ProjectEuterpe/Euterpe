@@ -1,7 +1,7 @@
 /**
  * @file MediaListSql.h
  * @author Mikra Selene
- * @version
+ * @version OK
  * @date
  *
  * @section LICENSE
@@ -69,18 +69,17 @@ class MediaListSql {
   ~MediaListSql() = default;
 
   auto connect() -> void;
-
   nd auto table() const -> QList<QSharedPointer<MediaData>>;
-  nd auto sort(MediaDataEnum dataEnum, SortEnum sortEnum) const
+  nd auto sort(const MediaDataEnum &dataEnum, const SortEnum &sortEnum) const
       -> QList<QSharedPointer<MediaData>>;
-  nd auto find(MediaDataEnum dataEnum, const QVariant &v) const
+  nd auto find(const MediaDataEnum &dataEnum, const QVariant &v) const
       -> QList<QSharedPointer<MediaData>>;
   void insert(const QSharedPointer<MediaData> &row) const;
   void remove(const QSharedPointer<MediaData> &row) const;
-  void update(const QSharedPointer<MediaData> &row, MediaDataEnum dataEnum,
-              const QVariant &v) const;
+  void update(const QSharedPointer<MediaData> &row,
+              const MediaDataEnum &dataEnum, const QVariant &v) const;
 
- public:
+ private:
   nd auto query(const QString &) const -> QList<QSharedPointer<MediaData>>;
 
   QSqlDatabase db_;

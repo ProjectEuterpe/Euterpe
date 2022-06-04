@@ -1,7 +1,7 @@
 ﻿/**
  * @file MediaList.cpp
  * @author Mikra Selene
- * @version
+ * @version OK
  * @date
  *
  * @section LICENSE
@@ -24,23 +24,75 @@
 
 #include "MediaList.h"
 
-MediaList::MediaList(const QPointer<Player>& parent)
-    : player_(parent), playOrder_(PlayOrder::SingleLoop), currentIndex_(-1) {
+#pragma region public
+
+/**
+ * @brief
+ * @param player
+ */
+MediaList::MediaList(const QPointer<Player>& player)
+    : player_(player), playOrder_(PlayOrder::SingleLoop), currentIndex_(0) {
   this->mediaPlayer_ = QPointer<QMediaPlayer>(new QMediaPlayer());
   connect(this->mediaPlayer_, &QMediaPlayer::metaDataChanged, this,
           &MediaList::onChangeMetaData);
   this->initDatabase();
 }
 
-void MediaList::addMediaItemBox(const QUrl& url, const QString& author,
+/**
+ * @brief Get the database table.
+ * @return
+ */
+auto MediaList::databaseTable() const -> QList<QSharedPointer<MediaData>> {
+  return this->database_->table();
+}
+
+/**
+ * @brief Insert a media to database.
+ * @param url
+ */
+void MediaList::insertToDatabase(const QUrl& url) const {
+  auto rows = this->database_->find(MediaDataEnum::MEDIA_PATH, url.path());
+  if (rows.empty()) {
+    // if media does not exist, insert it.
+    auto md5 = [=]() -> QString {
+      auto mediaFile = QFile(url.path());
+      mediaFile.open(QIODevice::ReadOnly);
+      auto md5 = QString(
+          QCryptographicHash::hash(mediaFile.readAll(), QCryptographicHash::Md5)
+              .toHex());
+      mediaFile.close();
+      return md5;
+    }();
+    auto mediaName = url.fileName();
+    auto mediaPath = url.path();
+    auto label = QString();
+    auto metadata = MetaData(this->player_->metaData()).toJsonStringCompact();
+    auto timestamp = QDateTime::currentDateTime().toSecsSinceEpoch();
+    this->database_->insert(QSharedPointer<MediaData>(new MediaData{
+        md5, mediaName, mediaPath, label, metadata, timestamp, timestamp}));
+  } else {
+    // if media exists, update it.
+    for (const auto& row : rows) {
+      auto timestamp = QDateTime::currentDateTime().toSecsSinceEpoch();
+      this->database_->update(row, MediaDataEnum::PLAY_TIMESTAMP, timestamp);
+    }
+  }
+}
+
+/**
+ * @brief Add a media item box.
+ * @param url
+ * @param artist
+ * @param title
+ */
+void MediaList::addMediaItemBox(const QUrl& url, const QString& artist,
                                 const QString& title) {
-  qDebug() << "addMediaItemBox";
   auto mediaItemBox = new MediaItemBox(this->player_);
   auto metaData = mediaPlayer_->metaData();
   mediaItemBox->setMetaData(metaData);
-  mediaItemBox->setMediaArtist(author);
-  mediaItemBox->setMediaTitle(title);
   mediaItemBox->setMediaUrl(url);
+  mediaItemBox->setMediaArtist(artist);
+  mediaItemBox->setMediaTitle(title);
   if (!this->mediaList_.length()) {
     this->currentMediaItem_ = mediaItemBox;
     this->currentIndex_ = 0;
@@ -53,70 +105,42 @@ void MediaList::addMediaItemBox(const QUrl& url, const QString& author,
   mediaItemBoxConnection(play, checkCurrentMedia);
   mediaItemBoxConnection(pause, pause);
   mediaItemBoxConnection(stop, stop);
-  mediaItemBoxConnection(deleteMedia, onRemoveMedia);
+  mediaItemBoxConnection(removeMedia, onRemoveMedia);
 #undef mediaItemBoxConnection
 }
 
-void MediaList::onChangeMetaData() {  // ?
-  qDebug() << "onChangeMetaData";
-  auto metaData = this->mediaPlayer_->metaData();
-  if (metaData.isEmpty()) {
-    return;
-  }
-  QString artist = metaData.value(QMediaMetaData::AlbumTitle).toString();
-  QString title = metaData.value(QMediaMetaData::Title).toString();
-  this->addMediaItemBox(this->mediaPlayer_->source(), artist, title);
-}
-
-auto MediaList::databaseTable() -> QList<QSharedPointer<MediaData>> {
-  return this->database_->table();
-}
-
-void MediaList::insertToDatabase(const QUrl& url) {
-  auto rows = this->database_->find(MediaDataEnum::MEDIA_PATH, url.path());
-  if (rows.empty()) {
-    auto mediaFile = QFile(url.path());
-    mediaFile.open(QIODevice::ReadOnly);
-    auto md5 = QString(
-        QCryptographicHash::hash(mediaFile.readAll(), QCryptographicHash::Md5)
-            .toHex());
-    auto mediaName = url.fileName();
-    auto mediaPath = url.path();
-    auto label = QString();
-    auto metadata = MetaData(this->player_->metaData()).toJsonStringCompact();
-    auto timestamp = QDateTime::currentDateTime().toSecsSinceEpoch();
-    mediaFile.close();
-    this->database_->insert(QSharedPointer<MediaData>(new MediaData{
-        md5, mediaName, mediaPath, label, metadata, timestamp, timestamp}));
-  } else {
-    for (const auto& row : rows) {
-      auto timestamp = QDateTime::currentDateTime().toSecsSinceEpoch();
-      this->database_->update(row, MediaDataEnum::PLAY_TIMESTAMP, timestamp);
-    }
-  }
-}
-
-void MediaList::importMedia(const QUrl& url) {
+/**
+ * @brief Import media.
+ * @param url
+ */
+void MediaList::importMedia(const QUrl& url) const {
   auto check = QFileInfo(url.path());
   if (check.exists() && check.isFile()) {
     this->mediaPlayer_->setSource(url);
   } else {
-    qDebug() << "WARNING!";
+    // TODO: Media file problem!
   }
 }
 
-void MediaList::playStop(bool play) {
+/**
+ * @brief To play, or not to play, that is the question.
+ * @param play
+ */
+void MediaList::playStop(bool play) const {
   this->currentMediaItem_->setButtonPlay(play);
 }
 
-void MediaList::playPrevMedia() {
-  qDebug() << "clicked: playPrevMedia";
+/**
+ * @brief To play prev media or to play next media, that is also the question.
+ * @param seq
+ */
+void MediaList::playPrevNextMedia(const Sequence& seq) {
   switch (this->playOrder_) {
     case PlayOrder::OnlyOnce:
     case PlayOrder::SingleLoop:
     case PlayOrder::InOrder: {
-      this->stepForward(-1);
-      break;
+      this->stepForward(seq == Sequence::Prev ? -1 : +1);
+      return;
     }
     case PlayOrder::Random: {
       auto rd = std::random_device();
@@ -124,80 +148,89 @@ void MediaList::playPrevMedia() {
       auto dist = std::uniform_int_distribution<qsizetype>(
           1, this->mediaList_.length() - 1);
       this->stepForward(dist(mt));
-      break;
+      return;
     }
   }
 }
 
-void MediaList::playNextMedia() {
-  qDebug() << "clicked: playNextMedia";
-  switch (this->playOrder_) {
-    case PlayOrder::OnlyOnce:
-    case PlayOrder::SingleLoop:
-    case PlayOrder::InOrder: {
-      this->stepForward(+1);
-      break;
-    }
-    case PlayOrder::Random: {
-      auto rd = std::random_device();
-      auto mt = std::mt19937(rd());
-      auto dist = std::uniform_int_distribution<qsizetype>(
-          1, this->mediaList_.length() - 1);
-      this->stepForward(dist(mt));
-      break;
-    }
-  }
+#pragma endregion
+
+#pragma region private
+
+/**
+ * @brief Initialize database.
+ */
+void MediaList::initDatabase() {
+  auto connection = QSharedPointer<ConnectionArgs>(new ConnectionArgs{
+      "QSQLITE", QApplication::applicationDirPath() + "/database.dat", "selene",
+      "123456", "localhost", 400});
+  this->database_ = QSharedPointer<MediaListSql>(new MediaListSql(connection));
+  this->database_->connect();
 }
 
+/**
+ * @brief Step forward.
+ * @param step
+ */
 void MediaList::stepForward(const qint64& step) {
-  currentIndex_ = (currentIndex_ + step) % mediaList_.length();
-  currentMediaItem_->setActive(false);
-  currentMediaItem_ = mediaList_[currentIndex_];
-  currentMediaItem_->setActive(true);
-  emit changeCurrentMedia(currentMediaItem_->getMediaUrl());
+  this->currentIndex_ = [](qint64 x, qint64 n) -> qint64 {
+    return (x % n + n) % n;  // to avoid negative index.
+  }(this->currentIndex_ + step, this->mediaList_.length());
+  this->currentMediaItem_->setActive(false);
+  this->currentMediaItem_ = this->mediaList_[this->currentIndex_];
+  this->currentMediaItem_->setActive(true);
+  emit this->changeCurrentMedia(this->currentMediaItem_->getMediaUrl());
 }
 
+/**
+ * @brief Find a media by media url in the media list.
+ * @param url: Given url.
+ * @return A QList iterator.
+ */
 auto MediaList::findMedia(const QUrl& url)
     -> QList<QPointer<MediaItemBox>>::iterator {
   return std::find_if(this->mediaList_.begin(), this->mediaList_.end(),
                       [=](auto i) { return i->getMediaUrl() == url; });
 }
 
+/**
+ * @brief The inspection of the media is necessary when playing.
+ * @param url: Given url.
+ */
 void MediaList::checkCurrentMedia(const QUrl& url) {
   if (url == this->currentMediaItem_->getMediaUrl()) {
-    qDebug() << "play" << url;
-    emit play();
-    return;
-  }
-  auto iterator = findMedia(url);
-  if (iterator != this->mediaList_.end()) {
-    this->currentMediaItem_->setActive(false);
-    this->currentMediaItem_ = *iterator;
-    this->currentIndex_ = std::distance(iterator, this->mediaList_.begin());
-    this->currentMediaItem_->setActive(true);
-    emit changeCurrentMedia(url);
-    qDebug() << "current index :" << this->currentIndex_;
-  }
-}
-
-void MediaList::onRemoveMedia(const QUrl& url) {
-  auto iterator = findMedia(url);
-  if (iterator != this->mediaList_.end()) {
-    this->player_->deleteMediaItemBox(*iterator);
-    this->mediaList_.erase(iterator);
-    auto index = std::distance(iterator, this->mediaList_.begin());
-    if (index == this->currentIndex_) {
-      onNextMedia();
-    }
-    auto rows = this->database_->find(MediaDataEnum::MEDIA_PATH, url.path());
-    for (const auto& row : rows) {
-      this->database_->remove(row);
-    }
+    // if media is not changed...
+    emit this->play(this->currentMediaItem_->getMediaUrl());
   } else {
-    emit endOfMediaList();
+    // change the media.
+    auto iterator = this->findMedia(url);
+    if (iterator != this->mediaList_.end()) {
+      this->currentMediaItem_->setActive(false);
+      this->currentMediaItem_ = *iterator;
+      this->currentIndex_ = std::distance(iterator, this->mediaList_.begin());
+      this->currentMediaItem_->setActive(true);
+      emit changeCurrentMedia(url);
+      qDebug() << "index changed: current index =" << this->currentIndex_;
+    } else {
+      // TODO: ILLEGAL URL!
+      return;
+    }
+  }
+  auto rows = this->database_->find(MediaDataEnum::MEDIA_PATH, url.path());
+  for (const auto& row : rows) {
+    // update the play timestamp in the database.
+    auto timestamp = QDateTime::currentDateTime().toSecsSinceEpoch();
+    this->database_->update(row, MediaDataEnum::PLAY_TIMESTAMP, timestamp);
   }
 }
 
+#pragma endregion
+
+#pragma region slots
+
+/**
+ * @brief Play next media handler.
+ */
 void MediaList::onNextMedia() {
   switch (this->playOrder_) {
     case PlayOrder::OnlyOnce: {
@@ -205,7 +238,7 @@ void MediaList::onNextMedia() {
       break;
     }
     case PlayOrder::SingleLoop: {
-      emit play();
+      emit play(this->currentMediaItem_->getMediaUrl());
       break;
     }
     case PlayOrder::InOrder: {
@@ -225,45 +258,71 @@ void MediaList::onNextMedia() {
   this->player_->setButtonPlayIcon(continuePlay);
 }
 
+/**
+ * @brief Change play order handler.
+ */
 void MediaList::onChangePlayOrder() {
   auto changePlayOrder = [&](PlayOrder playOrder) {
     this->playOrder_ = playOrder;
     this->player_->setPlayOrderIcon(playOrder);
   };
+  qDebug() << "play order changed:";
   switch (this->playOrder_) {
     case PlayOrder::OnlyOnce: {
-      qDebug() << "play order changed: play onlyOnce";
+      qDebug() << "current play order is InOrder";
       changePlayOrder(PlayOrder::InOrder);
-      break;
+      return;
     }
     case PlayOrder::InOrder: {
-      qDebug() << "play order changed: play randomLoop";
+      qDebug() << "current play order is RandomLoop";
       changePlayOrder(PlayOrder::Random);
-      break;
+      return;
     }
     case PlayOrder::Random: {
-      qDebug() << "play order changed: play singleLoop";
+      qDebug() << "current play order is SingleLoop";
       changePlayOrder(PlayOrder::SingleLoop);
-      break;
+      return;
     }
     case PlayOrder::SingleLoop: {
-      qDebug() << "play order changed: play onlyOnce";
+      qDebug() << "current play order is OnlyOnce";
       changePlayOrder(PlayOrder::OnlyOnce);
-      break;
-    }
-    default: {
-      qDebug() << "?";
+      return;
     }
   }
 }
 
-void MediaList::initDatabase() {
-  auto connection = QSharedPointer<ConnectionArgs>(new ConnectionArgs{
-      "QSQLITE", QApplication::applicationDirPath() + "/database.dat", "selene",
-      "123456", "localhost", 400});
-  this->database_ = QSharedPointer<MediaListSql>(new MediaListSql(connection));
-  this->database_->connect();
-  // get data from database...
-  for (const auto& row : this->database_->table()) {
+/**
+ * @brief When removing the media.
+ * @param url
+ */
+void MediaList::onRemoveMedia(const QUrl& url) {
+  auto iterator = this->findMedia(url);
+  if (iterator != this->mediaList_.end()) {
+    this->player_->deleteMediaItemBox(*iterator);  // TODO: Change to QPointer?
+    this->mediaList_.erase(iterator);
+    auto index = std::distance(iterator, this->mediaList_.begin());
+    if (index == this->currentIndex_) {
+      // if remove the current playing media, play next media.
+      this->onNextMedia();
+    }
+    // remove media from the database.
+    auto rows = this->database_->find(MediaDataEnum::MEDIA_PATH, url.path());
+    for (const auto& row : rows) {
+      this->database_->remove(row);
+    }
+  } else {
+    emit this->endOfMediaList();
   }
 }
+
+/**
+ * @brief Change meta data handler.
+ */
+void MediaList::onChangeMetaData() {
+  auto metaData = this->mediaPlayer_->metaData();
+  auto artist = metaData.value(QMediaMetaData::AlbumTitle).toString();
+  auto title = metaData.value(QMediaMetaData::Title).toString();
+  this->addMediaItemBox(this->mediaPlayer_->source(), artist, title);
+}
+
+#pragma endregion
