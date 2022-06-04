@@ -126,8 +126,8 @@ void PlayerShortcut::playAudio() {
  * @brief ...
  */
 void PlayerShortcut::playVideo() {
-  addShortcut("down", +5, SliderShortcut::Volume);
-  addShortcut("up", -5, SliderShortcut::Volume);
-  addShortcut("left", -50, SliderShortcut::Progress);
-  addShortcut("right", +50, SliderShortcut::Progress);
+  addShortcut("down", +5, SliderShortcut::Progress);
+  addShortcut("up", -5, SliderShortcut::Progress);
+  addShortcut("left", -1, SliderShortcut::Progress);
+  addShortcut("right", +1, SliderShortcut::Progress);
 }
