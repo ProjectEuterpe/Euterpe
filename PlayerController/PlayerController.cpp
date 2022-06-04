@@ -115,6 +115,8 @@ PlayerController::PlayerController(const QPointer<Player> &player) {
   // showFrameTimer->setSingleShot(true);
   // connect(showFrameTimer, &QTimer::timeout, player_,
   // &Player::closeFrameShow);
+  connect(player_, &Player::showFrameSignal,
+   this,   &PlayerController::onProgressMouseOn);
 
   // 初始化媒体库列表
   initMediaList();
@@ -387,7 +389,8 @@ void PlayerController::onTimerStart() {
 void PlayerController::onTimerEnd() {
   //隐藏
   qDebug() << "TimeOut";
-  if (player_->isFullScreen()) player_->ui()->controlPad->setHidden(true);
+  if (player_->isFullScreen())
+      player_->ui()->controlPad->setHidden(true);
   showBarTimer->stop();
 }
 
@@ -400,6 +403,7 @@ void PlayerController::onProgressMouseOn(const double per) {
 }
 
 void PlayerController::showFrameData(QImage image) { player_->setFrame(image); }
+
 
 /**
  * @brief Handler called when the value of `btn_volume` button is clicked.

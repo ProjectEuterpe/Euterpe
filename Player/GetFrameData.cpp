@@ -47,7 +47,7 @@ GetFrameData::GetFrameData(const QPointer<Player> &player) {
 
 void GetFrameData::ReloadFrameData(const QVideoFrame &nowFrame) {
   if (!isVideo || done) return;
-  media_player->stop();  //播放器停止
+  media_player->stop(); //播放器停止
   if (timeRange == -1)  //获取第一帧以获取帧的时间间隔,更换视频url时会调用
   {
     timeRange = (nowFrame.endTime() - nowFrame.startTime()) / 1000;
