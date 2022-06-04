@@ -1,7 +1,7 @@
-﻿/*
- * @file
+﻿/**
+ * @file Player.cpp
  * @author Mikra Selene
- * @version
+ * @version OK
  * @date
  *
  * @section LICENSE
@@ -24,58 +24,71 @@
 
 #include "Player.h"
 
-#include <QFileDialog>
-#include <QMediaMetaData>
-#include <QTime>
-
-#include "../MediaList/MediaItemBox.h"
-#include "../MediaList/MediaListSql.h"
-#include "../MetaData/MetaDataFloatTable.h"
 #include "../UI/ui_Player.h"
-#include "ProgressSlider.h"
+
+#pragma region public
 
 Player::Player(const QPointer<QWidget>& parent)
-    : QWidget(parent), ui_(new Ui::Player) {
-  ui_->setupUi(this);
+    : QWidget(parent),
+      ui_(new Ui::Player),
+      isFullScreen_(false),
+      showFrame_(false),
+      audioOutput_(QPointer<QAudioOutput>(new QAudioOutput)),
+      mediaPlayer_(QPointer<QMediaPlayer>(new QMediaPlayer)),
+      frame_(QPointer<MetaDataFloatTable>(new MetaDataFloatTable())) {
+  this->ui_->setupUi(this);
 
   // initialize audio output and media player
-  audioOutput_ = QPointer<QAudioOutput>{new QAudioOutput};
-  mediaPlayer_ = QPointer<QMediaPlayer>{new QMediaPlayer};
-  audioOutput_->setVolume(sliderVolume());  // necessary?
-  mediaPlayer_->setAudioOutput(audioOutput_);
-  mediaPlayer_->setVideoOutput(ui_->videoWidget);
-  setPlayOrderIcon(PlayOrder::OnlyOnce);
+  this->audioOutput_->setVolume(
+      static_cast<float>(this->sliderVolume()));  // necessary?
+  this->mediaPlayer_->setAudioOutput(this->audioOutput_);
+  this->mediaPlayer_->setVideoOutput(this->ui_->videoWidget);
 
-  connect(ui_->open, &QPushButton::clicked,  //
-          this, &Player::onClickOpen);
-  connect(mediaPlayer_, &QMediaPlayer::positionChanged,  //
-          this, &Player::progressing);
-  //全屏部分
-  connect(ui_->isfullScreen, &QPushButton::clicked,  //
-          this, &Player::onClickFullScreen);
-  isFullScreen_ = false;
-  isShowFrame = false;
-  ui_->videoWidget->installEventFilter(this);
-  ui_->videoWidget->setAttribute(Qt::WA_Hover, true);
-  ui_->progressSlider->installEventFilter(this);
-  ui_->progressSlider->setAttribute(Qt::WA_Hover, true);
-  frame_ = QPointer<MetaDataFloatTable>{new MetaDataFloatTable()};
-  frame_->setWindowFlags(Qt::Popup | Qt::Tool | Qt::FramelessWindowHint);
-  frame_->setHidden(true);
-  stackedWidget = QPointer<QStackedWidget>{new QStackedWidget};
-  ui_->stackedWidget->setCurrentWidget(ui_->initWidget);
-  QImage* img = new QImage;
+  this->setPlayOrderIcon(PlayOrder::OnlyOnce);
+  connect(this->ui_->open, &QPushButton::clicked, this, &Player::onClickOpen);
+  connect(this->mediaPlayer_, &QMediaPlayer::positionChanged, this,
+          &Player::progressing);
+  connect(this->ui_->isfullScreen, &QPushButton::clicked, this,
+          &Player::onClickFullScreen);
+
+  this->ui_->videoWidget->installEventFilter(this);
+  this->ui_->videoWidget->setAttribute(Qt::WA_Hover, true);
+  this->ui_->progressSlider->installEventFilter(this);
+  this->ui_->progressSlider->setAttribute(Qt::WA_Hover, true);
+  this->ui_->stackedWidget->setCurrentWidget(this->ui_->initWidget);
+
+  this->frame_->setWindowFlags(Qt::Popup | Qt::Tool | Qt::FramelessWindowHint);
+  this->frame_->setHidden(true);
+
+  auto img = new QImage;
   img->load(":/images/1.jpg");
-  QPixmap pixmap = QPixmap::fromImage(*img);
-  QPixmap fitpixmap =
+  auto pixmap = QPixmap::fromImage(*img);
+  auto fitPixmap =
       pixmap.scaled(311, 231, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-  ui_->label_2->setScaledContents(true);
-  ui_->label_2->setPixmap(fitpixmap);
+  this->ui_->label_2->setScaledContents(true);
+  this->ui_->label_2->setPixmap(fitPixmap);
 }
 
-Player::~Player() { delete ui_; }
+Player::~Player() { delete this->ui_; }
 
-#pragma region  // region: set values of some widgets
+/**
+ * @brief Initialize a media file.
+ * @param url: The url of the media file.
+ */
+void Player::initMedia(const QUrl& url) {
+  qDebug() << "init media:" << url;
+  this->mediaUrl_ = url;
+  this->mediaPlayer_->setSource(url);
+  // some buttons remain unavailable until a media file is loaded.
+  this->ui_->play->setEnabled(true);
+  this->ui_->stop->setEnabled(true);
+  this->ui_->prev->setEnabled(true);
+  this->ui_->next->setEnabled(true);
+  this->setButtonPlayIcon(true);
+  this->setButtonPrevIcon();
+  this->setButtonNextIcon();
+  emit this->addMedia(url);
+}
 
 /**
  * @brief Lock and unlock the `loop` checkbox. If the checkbox is locked, it's
@@ -84,12 +97,11 @@ Player::~Player() { delete ui_; }
  * @param lock
  */
 void Player::setLoopLock(bool lock) {
-  qDebug() << "set loop lock:" << lock;
   if (lock) {
-    setPlayOrderIcon(PlayOrder::OnlyOnce);
-    ui_->playOrder->setEnabled(false);
+    this->setPlayOrderIcon(PlayOrder::OnlyOnce);
+    this->ui_->playOrder->setEnabled(false);
   } else {
-    ui_->playOrder->setEnabled(true);
+    this->ui_->playOrder->setEnabled(true);
   }
 }
 
@@ -98,8 +110,7 @@ void Player::setLoopLock(bool lock) {
  * @param max
  */
 void Player::setProgressSliderMax(const qint32& max) {
-  qDebug() << "set progress slider max:" << max;
-  ui_->progressSlider->setMaximum(max);
+  this->ui_->progressSlider->setMaximum(max);
 }
 
 /**
@@ -107,22 +118,22 @@ void Player::setProgressSliderMax(const qint32& max) {
  * @param play: `true` if media is paused, `false` if media is playing.
  */
 void Player::setButtonPlayIcon(bool play) {
-  qDebug() << "set button play icon:" << play;
-  ui_->play->setIcon(
+  this->ui_->play->setIcon(
       QIcon(play ? ":/images/circle-play.svg" : ":/images/circle-pause.svg"));
 }
 
+/**
+ * @brief Set the icon of the `prev` button.
+ */
 void Player::setButtonPrevIcon() {
-  qDebug() << "set button prev icon";
-  ui_->prev->setIcon(QIcon(":/images/step-previous.svg"));
+  this->ui_->prev->setIcon(QIcon(":/images/step-previous.svg"));
 }
 
 /**
  * @brief Set the icon of the `next` button.
  */
 void Player::setButtonNextIcon() {
-  qDebug() << "set button next icon";
-  ui_->next->setIcon(QIcon(":/images/step-next.svg"));
+  this->ui_->next->setIcon(QIcon(":/images/step-next.svg"));
 }
 
 /**
@@ -130,8 +141,7 @@ void Player::setButtonNextIcon() {
  * @param unmute: `true` if video is muted , `false` if video is unmuted.
  */
 void Player::setButtonVolumeIcon(bool unmute) {
-  qDebug() << "set button volume icon:" << unmute;
-  ui_->volume->setIcon(
+  this->ui_->volume->setIcon(
       QIcon(unmute ? ":/images/volume-open.svg" : ":/images/volume-close.svg"));
 }
 
@@ -140,8 +150,8 @@ void Player::setButtonVolumeIcon(bool unmute) {
  * @param type: play order type.
  */
 void Player::setPlayOrderIcon(const PlayOrder& type) {
-  QString icon{};
-  QString tip{};
+  auto icon = QString();
+  auto tip = QString();
   if (type == PlayOrder::OnlyOnce) {
     icon = ":/images/play-onlyOnce.svg";
     tip = tr("only once");
@@ -155,144 +165,161 @@ void Player::setPlayOrderIcon(const PlayOrder& type) {
     icon = ":/images/play-singleLoop.svg";
     tip = tr("single loop");
   }
-  ui_->playOrder->setToolTip(tip);
-  ui_->playOrder->setIcon(QIcon(icon));
+  this->ui_->playOrder->setToolTip(tip);
+  this->ui_->playOrder->setIcon(QIcon(icon));
 }
 
 void Player::setIsFullScreenIcon() {
-  ui_->isfullScreen->setIcon(QIcon(  // just to wrap the code...
-      isFullScreen_ ? ":/images/screen-common.svg"
-                    : ":/images/screen-full.svg"));
+  this->ui_->isfullScreen->setIcon(QIcon(  // just to wrap the code...
+      this->isFullScreen_ ? ":/images/screen-common.svg"
+                          : ":/images/screen-full.svg"));
+}
+
+void Player::setFrame(const QImage& image) {
+  this->frame_->setImage(
+      image.scaled(195, 115, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+  this->frame_->setPosition(
+      this->frame_->x() - this->frame_->width() / 2,
+      this->ui_->progressSlider->mapToGlobal(QPoint(0, 0)).y() -
+          this->frame_->height());
+  this->frame_->show();
+  this->showFrame_ = true;
+}
+
+void Player::setFramePos(const qreal& x) {
+  this->frame_->setPosition(
+      this->ui_->progressSlider->mapToGlobal(QPoint(0, 0)).x() +
+          this->ui_->progressSlider->width() * x,
+      0);
+}
+
+void Player::setMediaUrl(const QUrl& url) {
+  if (url != this->mediaUrl_) {
+    this->mediaUrl_ = url;
+    this->mediaPlayer_->setSource(url);
+  }
+  this->playMedia();
 }
 
 void Player::changeFullScreenStatus() {
-  if (isFullScreen_) {
-    ui_->groupPlay->setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
-    ui_->groupPlay->showFullScreen();
-    ui_->controlPad->setHidden(true);
+  if (this->isFullScreen_) {
+    this->ui_->groupPlay->setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
+    this->ui_->groupPlay->showFullScreen();
+    this->ui_->controlPad->setHidden(true);
   } else {
-    ui_->groupPlay->setWindowFlags(Qt::SubWindow);
-    ui_->groupPlay->showNormal();
-    ui_->controlPad->setHidden(false);
+    this->ui_->groupPlay->setWindowFlags(Qt::SubWindow);
+    this->ui_->groupPlay->showNormal();
+    this->ui_->controlPad->setHidden(false);
   }
 }
 
-void Player::addFloatTable(QPushButton* info, QString str, int posType) {
-  MetaDataFloatTable* widget = new MetaDataFloatTable(nullptr);
+void Player::closeFrameShow() {
+  if (this->showFrame_) {
+    this->frame_->setHidden(true);
+    this->showFrame_ = false;
+  }
+}
+
+void Player::addMediaItemSpace() {
+  this->ui_->scrollMediaListLayout->addSpacerItem(
+      new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding));
+}
+
+void Player::deleteMediaItemBox(QWidget* widget) {
+  widget->setParent(Q_NULLPTR);
+  this->ui_->scrollMediaListLayout->removeWidget(widget);
+}
+
+void Player::addMediaItemBox(QWidget* widget) {
+  this->ui_->scrollMediaListLayout->insertWidget(
+      this->ui_->scrollMediaListLayout->count() - 1, widget);
+}
+
+void Player::addFloatTable(QPushButton* info, const QString& str,
+                           const Position& position) {
+  auto widget = new MetaDataFloatTable(nullptr);
   widget->setText(str);
-  switch (posType) {
-    case 0: {  // 顶部
+  switch (position) {
+    case Position::UP: {
       widget->setPosition(
           info->mapToGlobal(QPoint(0, 0)).x() - widget->width() / 2 +
               info->width() / 2,
           info->mapToGlobal(QPoint(0, 0)).y() - widget->height());
       break;
     };
-    case 1: {  // 右方
+    case Position::RIGHT: {
       widget->setPosition(info->mapToGlobal(QPoint(0, 0)).x() + info->width(),
                           info->mapToGlobal(QPoint(0, 0)).y() -
                               widget->height() / 2 + info->height() / 2);
       break;
     }
   }
-
   widget->setWindowFlags(Qt::Popup);
   widget->show();
 }
 
-void Player::setFrame(QImage image) {
-  qDebug() << "set frame_";
-  frame_->setImage(
-      image.scaled(195, 115, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
-  frame_->setPosition(
-      frame_->x() - frame_->width() / 2,
-      ui_->progressSlider->mapToGlobal(QPoint(0, 0)).y() - frame_->height());
-
-  frame_->show();
-  isShowFrame = true;
-}
-
-void Player::setFramePos(float x) {
-  frame_->setPosition(ui_->progressSlider->mapToGlobal(QPoint(0, 0)).x() +
-                          ui_->progressSlider->width() * x,
-                      0);
-}
-
-void Player::closeFrameShow() {
-  if (!isShowFrame) return;
-  frame_->setHidden(true);
-  isShowFrame = false;
-  qDebug() << "closeFrame";
-}
-
-void Player::addMediaItemBox(QWidget* widget) {
-  ui_->scrollMediaListLayout->insertWidget(
-      ui_->scrollMediaListLayout->count() - 1, widget);
-}
-
-void Player::deleteMediaItemBox(QWidget* widget) {
-  widget->setParent(nullptr);
-  ui_->scrollMediaListLayout->removeWidget(widget);
-}
-
-void Player::addMediaItemSpacerV() {
-  ui_->scrollMediaListLayout->addSpacerItem(
-      new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding));
-}
-
-#pragma endregion
-
-#pragma region  // region: get values and status of the player
-
-auto Player::ui() const -> PlayerUiPtr { return ui_; }
+auto Player::ui() const -> PlayerUiPtr { return this->ui_; }
 
 auto Player::mediaPlayer() const -> QPointer<QMediaPlayer> {
-  return mediaPlayer_;
+  return this->mediaPlayer_;
 }
 
 auto Player::audioOutput() const -> QPointer<QAudioOutput> {
-  return audioOutput_;
+  return this->audioOutput_;
 }
 
-bool Player::rewind() const { return ui_->rewind->isChecked(); }
+bool Player::rewind() const { return this->ui_->rewind->isChecked(); }
 
-auto Player::duration() const -> qint64 { return mediaPlayer_->duration(); }
+auto Player::duration() const -> qint64 {
+  return this->mediaPlayer_->duration();
+}
 
-auto Player::totalTime() const -> qint64 { return duration() / 1000; }
+auto Player::totalTime() const -> qint64 { return this->duration() / 1000; }
 
 auto Player::metaData() const -> QMediaMetaData {
-  qDebug() << mediaPlayer_->metaData().isEmpty();
-  return mediaPlayer_->metaData();
+  return this->mediaPlayer_->metaData();
 }
 auto Player::sliderVolume() const -> qreal {
   // returns a real number from 0 to 1.
-  return static_cast<qreal>(ui_->volumeSlider->value()) /
-         static_cast<qreal>(ui_->volumeSlider->maximum());
+  return static_cast<qreal>(this->ui_->volumeSlider->value()) /
+         static_cast<qreal>(this->ui_->volumeSlider->maximum());
 }
 auto Player::sliderProgress() const -> qint64 {
-  return ui_->progressSlider->value();
+  return this->ui_->progressSlider->value();
 }
 
 auto Player::comboBoxRate() const -> qreal {
-  // todo
   auto rate_map = QMap<QString, qreal>{
       {tr("0.25x"), 0.25}, {tr("0.5x"), 0.5}, {tr("1x"), 1.0},
       {tr("1.5x"), 1.5},   {tr("2x"), 2.0},
   };
-  return rate_map.value(ui_->rate->currentText(), 1.0);
+  return rate_map.value(this->ui_->rate->currentText(), 1.0);
 }
 
 bool Player::endOfMedia() const {
-  return mediaPlayer_->mediaStatus() == QMediaPlayer::EndOfMedia;
+  return this->mediaPlayer_->mediaStatus() == QMediaPlayer::EndOfMedia;
 }
 
-auto Player::url() const -> QUrl { return mediaPlayer_->source(); }
-
-bool Player::isFullScreen() const { return isFullScreen_; }
+auto Player::url() const -> QUrl { return this->mediaPlayer_->source(); }
 
 #pragma endregion
 
-#pragma region  // region: private slots
+#pragma region slots
+
+void Player::playMedia() {
+  this->setButtonPlayIcon(false);
+  this->mediaPlayer_->play();
+}
+
+[[maybe_unused]] void Player::stopMedia() {
+  this->setButtonPlayIcon(true);
+  this->mediaPlayer_->stop();
+}
+
+[[maybe_unused]] void Player::pauseMedia() {
+  this->setButtonPlayIcon(true);
+  this->mediaPlayer_->pause();
+}
 
 /**
  * @brief A slot to keep track of the progression of the media playback and
@@ -302,16 +329,11 @@ bool Player::isFullScreen() const { return isFullScreen_; }
  * are useless.
  * @param progress: Current progression of the playback (in microsecond).
  */
-void Player::progressing(qint64 progress) {
-  if (!ui_->progressSlider->isSliderDown()) {
-    ui_->progressSlider->setValue(static_cast<int>(progress));
+void Player::progressing(const qint64& progress) {
+  if (!this->ui_->progressSlider->isSliderDown()) {
+    this->ui_->progressSlider->setValue(static_cast<int>(progress));
   }
-
-  // qDebug() << progress;
-
-  //   qDebug() << "progress";
-
-  updateTimeLabel(progress / 1000);
+  this->updateTimeLabel(progress / 1000);
 }
 
 /**
@@ -334,67 +356,58 @@ void Player::onClickOpen() {
 }
 
 void Player::onClickFullScreen() {
-  isFullScreen_ = !isFullScreen_;
-
-  qDebug() << "click:FullScreen:" << isFullScreen_;
-  setIsFullScreenIcon();
-  changeFullScreenStatus();
+  qDebug() << "clicked: fullScreen" << this->isFullScreen_;
+  this->isFullScreen_ = !this->isFullScreen_;
+  this->setIsFullScreenIcon();
+  this->changeFullScreenStatus();
 }
 
-bool Player::eventFilter(QObject* obj,
-                         QEvent* e) {  //不是全屏状态 或者 不是播放框
-
-  if (isFullScreen_ && obj == ui_->videoWidget) {
-    if (e->type() == QEvent::HoverMove)  //鼠标移动
-    {
-      qDebug() << "mouse:move";
-      emit showBar();
-      ui_->controlPad->setHidden(false);
+bool Player::eventFilter(QObject* obj, QEvent* e) {
+  if (this->isFullScreen_ && obj == this->ui_->videoWidget) {
+    if (e->type() == QEvent::HoverMove) {
+      qDebug() << "mouse: move";
+      emit this->showBar();
+      this->ui_->controlPad->setHidden(false);
     }
   }
-  if (obj == ui_->progressSlider) {
+  if (obj == this->ui_->progressSlider) {
     if (e->type() == QEvent::ToolTip) {
-      QHelpEvent* helpEvent = static_cast<QHelpEvent*>(e);
-      float per = helpEvent->pos().x() * 1.0 / ui_->progressSlider->width();
-      emit showFrameSignal(per);
+      auto helpEvent = dynamic_cast<QHelpEvent*>(e);
+      auto percent =
+          helpEvent->pos().x() * 1.0 / this->ui_->progressSlider->width();
+      emit this->showFrame(percent);
     } else if (e->type() != QEvent::Paint) {
-      closeFrameShow();
+      this->closeFrameShow();
     }
   }
-
-  // 事件交给上层对话框进行处理
   return QWidget::eventFilter(obj, e);
+}
+
+void Player::dragEnterEvent(QDragEnterEvent* event) {
+  if (event->mimeData()->hasUrls()) {
+    event->acceptProposedAction();
+  }
+}
+
+void Player::dropEvent(QDropEvent* event) {
+  auto urls = event->mimeData()->urls();
+  if (!urls.isEmpty()) {
+    for (const auto& u : urls) {
+      qDebug() << "drop:" << u.toString();
+      this->initMedia(u);
+    }
+  }
 }
 
 #pragma endregion
 
-#pragma region  // region: private
-
-/**
- * @brief Initialize a media file.
- * @param url: The url of the media file.
- */
-void Player::initMedia(const QUrl& url) {
-  qDebug() << "init media";
-  mediaUrl_ = url;
-  mediaPlayer_->setSource(url);
-  //  some buttons remain unavailable until a media file is loaded.
-  ui_->play->setEnabled(true);
-  ui_->stop->setEnabled(true);
-  ui_->prev->setEnabled(true);
-  ui_->next->setEnabled(true);
-  setButtonPlayIcon(true);
-  setButtonPrevIcon();
-  setButtonNextIcon();
-
-  emit addMedia(url);
-}
+#pragma region private
 
 /**
  * @brief Update time label.
  * @param time: Current time (in second).
  */
-void Player::updateTimeLabel(qint64 time) {
+void Player::updateTimeLabel(const qint64& time) {
   auto time_label_text = QString{};
   auto t = static_cast<qint32>(time);
   auto d = static_cast<qint32>(totalTime());
@@ -407,47 +420,8 @@ void Player::updateTimeLabel(qint64 time) {
   ui_->timeLabel->setText(time_label_text);
 }
 
-void Player::setMediaUrl(const QUrl& newMedia_url) {
-  qDebug() << "setMediaUrl" << newMedia_url;
-  if (newMedia_url != mediaUrl_) {
-    mediaUrl_ = newMedia_url;
-    mediaPlayer_->setSource(newMedia_url);
-  }
-  playMedia();
-}
-
-void Player::playMedia() {
-  setButtonPlayIcon(false);
-  mediaPlayer_->play();
-}
-
-void Player::stopMedia() {
-  setButtonPlayIcon(true);
-  mediaPlayer_->stop();
-}
-
-void Player::pauseMedia() {
-  setButtonPlayIcon(true);
-  mediaPlayer_->pause();
-}
-
 auto Player::state() const -> QMediaPlayer::PlaybackState {
   return mediaPlayer_->playbackState();
-}
-
-void Player::dragEnterEvent(QDragEnterEvent* event) {
-  if (event->mimeData()->hasUrls())
-    event->acceptProposedAction();  //可以在这个窗口部件上拖放对象
-}
-
-void Player::dropEvent(QDropEvent* event) {
-  QList<QUrl> urls = event->mimeData()->urls();
-  if (urls.isEmpty()) return;
-  foreach (QUrl u, urls) {
-    qDebug() << u.toString();
-    initMedia(u);
-  }
-  qDebug() << urls.size();
 }
 
 #pragma endregion

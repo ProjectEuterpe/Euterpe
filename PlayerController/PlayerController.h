@@ -25,10 +25,12 @@
 #ifndef EUTERPE_PLAYERCONTROLLER_PLAYERCONTROLLER_H_
 #define EUTERPE_PLAYERCONTROLLER_PLAYERCONTROLLER_H_
 
+#include <QJsonObject>
+
 #include "../MediaList/MediaItemBox.h"
 #include "../MediaList/MediaList.h"
 #include "../MetaData/MetaData.h"
-#include "../Player/GetFrameData.h"
+#include "../Player/FrameData.h"
 #include "../Player/Player.h"
 #include "PlayerShortcut.h"
 
@@ -87,7 +89,7 @@ class PlayerController : public QWidget {
  private:
   QPointer<Player> player_;
   QPointer<QTimer> showBarTimer_;
-  QPointer<GetFrameData> frameData_;
+  QPointer<FrameData> frameData_;
   QPointer<MediaList> mediaList_;
   QPointer<PlayerShortcut> shortcut_;
 };

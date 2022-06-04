@@ -32,7 +32,7 @@ MetaDataFloatTable::MetaDataFloatTable(QWidget *parent)
   this->ui_->textEdit->setFont(font);
 }
 
-MetaDataFloatTable::~MetaDataFloatTable() { delete ui_; }
+MetaDataFloatTable::~MetaDataFloatTable() { delete this->ui_; }
 
 void MetaDataFloatTable::setPosition(const qint32 &x, const qint32 &y) {
   this->setGeometry(x, y, this->ui_->textEdit->width(),

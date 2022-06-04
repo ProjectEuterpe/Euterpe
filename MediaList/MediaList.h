@@ -28,7 +28,7 @@
 #include <QList>
 
 #include "../MetaData/MetaData.h"
-#include "../Player/GetFrameData.h"
+#include "../Player/FrameData.h"
 #include "../Player/Player.h"
 #include "MediaItemBox.h"
 #include "MediaListSql.h"

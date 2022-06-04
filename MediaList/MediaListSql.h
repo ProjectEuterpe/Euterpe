@@ -70,7 +70,7 @@ class MediaListSql {
 
   auto connect() -> void;
   nd auto table() const -> QList<QSharedPointer<MediaData>>;
-  nd auto sort(const MediaDataEnum &dataEnum, const SortEnum &sortEnum) const
+  nd mu auto sort(const MediaDataEnum &dataEnum, const SortEnum &sortEnum) const
       -> QList<QSharedPointer<MediaData>>;
   nd auto find(const MediaDataEnum &dataEnum, const QVariant &v) const
       -> QList<QSharedPointer<MediaData>>;

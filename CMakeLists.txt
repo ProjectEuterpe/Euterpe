@@ -26,7 +26,7 @@ qt6_add_resources(QRC_FILES ${QRC_SOURCES_FILES})
 source_group("Resource Files" FILES ${QRC_SOURCES_FILES})
 add_executable(Euterpe main.cpp Player/Player.cpp Player/Player.h UI/Player.ui PlayerController/PlayerController.cpp PlayerController/PlayerController.h MetaData/MetaDataFloatTable.h MetaData/MetaDataFloatTable.cpp UI/MetaDataFloatTable.ui ${QRC_FILES}
 	MediaList/MediaList.h MediaList/MediaList.cpp
-	PlayerController/PlayerShortcut.h PlayerController/PlayerShortcut.cpp Player/GetFrameData.h Player/GetFrameData.cpp MediaList/MediaItemBox.h MediaList/MediaItemBox.cpp UI/MediaItemBox.ui
+	PlayerController/PlayerShortcut.h PlayerController/PlayerShortcut.cpp Player/FrameData.h Player/FrameData.cpp MediaList/MediaItemBox.h MediaList/MediaItemBox.cpp UI/MediaItemBox.ui
 	MediaList/MediaListSql.cpp MediaList/MediaListSql.h MetaData/MetaData.cpp MetaData/MetaData.h)
 
 target_link_libraries(Euterpe

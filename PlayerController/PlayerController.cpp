@@ -24,13 +24,11 @@
 
 #include "PlayerController.h"
 
-#include <QJsonObject>
-
 PlayerController::PlayerController(const QPointer<Player> &player)
     : player_(player),
       shortcut_(QPointer<PlayerShortcut>(new PlayerShortcut(player))),
       showBarTimer_(QPointer<QTimer>(new QTimer())),
-      frameData_(QPointer<GetFrameData>(new GetFrameData(player_))) {
+      frameData_(QPointer<FrameData>(new FrameData(player_))) {
   auto ui = this->player_->ui();
   this->initMediaList();
 
@@ -100,9 +98,9 @@ PlayerController::PlayerController(const QPointer<Player> &player)
   connect(this->showBarTimer_, &QTimer::timeout, this,
           &PlayerController::onTimerEnd);
 
-  connect(this->frameData_, &GetFrameData::doneGetFrame, this,
+  connect(this->frameData_, &FrameData::getFrameDone, this,
           &PlayerController::showFrameData);
-  connect(this->player_, &Player::showFrameSignal, this,
+  connect(this->player_, &Player::showFrame, this,
           &PlayerController::onProgressMouseOn);
   connect(this->player_, &Player::addMedia, this,
           &PlayerController::addMediaItem);
@@ -132,7 +130,7 @@ auto PlayerController::getMetaData(const QMediaMetaData::Key &key) const
 }
 
 void PlayerController::initMediaList() {
-  this->player_->addMediaItemSpacerV();
+  this->player_->addMediaItemSpace();
   this->mediaList_ = QPointer<MediaList>(new MediaList(player_));
   // get data from database...
   for (const auto &row : this->mediaList_->databaseTable()) {
@@ -168,10 +166,12 @@ void PlayerController::playAudio() const {
   this->player_->ui()->artist->setText(artist);
   auto img = metadata.value(QMediaMetaData::ThumbnailImage).value<QImage>();
   auto pixmap = QPixmap::fromImage(img);
-  auto fitPixmap =
-      pixmap.scaled(150, 150, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+  if (!pixmap.isNull()) {
+    auto fitPixmap = pixmap.scaled(150, 150, Qt::IgnoreAspectRatio,
+                                   Qt::SmoothTransformation);
+    this->player_->ui()->img->setPixmap(fitPixmap);
+  }
   this->player_->ui()->img->setScaledContents(true);
-  this->player_->ui()->img->setPixmap(fitPixmap);
 
   if (name.isEmpty()) {
     this->player_->ui()->name->setText(tr("Untitled"));
@@ -186,10 +186,12 @@ void PlayerController::playAudio() const {
     auto newImg = new QImage;
     newImg->load(":/images/2.jpg");
     auto newPixmap = QPixmap::fromImage(*newImg);
-    auto newFitPixmap = newPixmap.scaled(150, 150, Qt::IgnoreAspectRatio,
-                                         Qt::SmoothTransformation);
+    if (!newPixmap.isNull()) {
+      auto newFitPixmap = newPixmap.scaled(150, 150, Qt::IgnoreAspectRatio,
+                                           Qt::SmoothTransformation);
+      this->player_->ui()->img->setPixmap(newFitPixmap);
+    }
     this->player_->ui()->img->setScaledContents(true);
-    this->player_->ui()->img->setPixmap(newFitPixmap);
   }
   this->player_->ui()->stackedWidget->setCurrentWidget(
       this->player_->ui()->audioWidget);
@@ -282,7 +284,6 @@ void PlayerController::onChangeVolume() {
   auto currentVolume = this->player_->sliderVolume();
   auto previousVolume = this->player_->audioOutput()->volume();
   if (currentVolume != 0 && previousVolume == 0) {
-    // TODO: Player modify.
     this->player_->setButtonVolumeIcon(true);
   } else if (currentVolume == 0 && previousVolume != 0) {
     this->player_->setButtonVolumeIcon(false);
@@ -307,7 +308,6 @@ void PlayerController::onChangeRate() {
 void PlayerController::onClickMute() {
   auto volume = this->player_->audioOutput()->volume();
   if (volume != 0) {
-    // TODO: Player modify
     this->player_->setButtonVolumeIcon(false);
     emit this->changeVolume(0);
   } else {
@@ -369,7 +369,7 @@ void PlayerController::onProgressMouseOn(const qfloat16 &percent) {
   auto target = static_cast<qint64>(
       percent * this->getMetaData(QMediaMetaData::Duration).toInt());
   this->player_->setFramePos(percent);
-  this->frameData_->GetTargetFrameImage(target);
+  this->frameData_->targetFrameImage(target);
 }
 
 /**
@@ -433,7 +433,7 @@ void PlayerController::setProgressValue(const qint32 &delta) {
   if (playing) {
     this->player_->mediaPlayer()->pause();
   }
-  auto target = this->frameData_->GetTargetFrameTime(
+  auto target = this->frameData_->getTargetFrameTime(
       this->player_->mediaPlayer()->position(), delta);
   if (target < 0) {
     target = 0;

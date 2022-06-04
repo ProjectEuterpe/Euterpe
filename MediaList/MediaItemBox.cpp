@@ -33,7 +33,7 @@ MediaItemBox::MediaItemBox(const QPointer<Player> &parent)
       ui_(new Ui::MediaItemBox),
       player_(parent),
       isPlaying_(false) {
-  ui_->setupUi(this);
+  this->ui_->setupUi(this);
 
 #define CONNECTION_BOX(sender, slot) \
   connect(this->ui_->sender, &QPushButton::clicked, this, &MediaItemBox::slot)
@@ -43,7 +43,7 @@ MediaItemBox::MediaItemBox(const QPointer<Player> &parent)
 #undef CONNECTION_BOX
 }
 
-MediaItemBox::~MediaItemBox() { delete ui_; }
+MediaItemBox::~MediaItemBox() { delete this->ui_; }
 
 void MediaItemBox::setMediaTitle(const QString &title) {
   auto text = title.isEmpty() ? tr("Unknown Title") : title;
@@ -57,7 +57,7 @@ void MediaItemBox::setMediaArtist(const QString &artist) {
   this->ui_->textArtist->setToolTip(text);
 }
 
-void MediaItemBox::setImage(const QImage &img) {}
+[[maybe_unused]] void MediaItemBox::setImage(const QImage &img) {}
 
 void MediaItemBox::setMetaData(const QMediaMetaData &data) {
   this->metaData_ = QSharedPointer<MetaData>(new MetaData(data));
@@ -97,8 +97,8 @@ void MediaItemBox::onClickPlay() {
 }
 
 void MediaItemBox::onClickInfo() {
-  // TODO: player function modify
-  this->player_->addFloatTable(this->ui_->info, this->metaDataString_, 1);
+  this->player_->addFloatTable(this->ui_->info, this->metaDataString_,
+                               Position::RIGHT);
 }
 
 void MediaItemBox::onClickDel() { emit this->removeMedia(this->mediaUrl_); }

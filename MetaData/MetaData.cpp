@@ -58,7 +58,7 @@ auto MetaData::get(const QString& key) -> QVariant { return this->json_[key]; }
  * @brief To Qt media meta data.
  * @return
  */
-auto MetaData::toQtMetaData() const -> QMediaMetaData {
+[[maybe_unused]] auto MetaData::toQtMetaData() const -> QMediaMetaData {
   return this->metaData_;
 }
 
@@ -79,7 +79,7 @@ auto MetaData::toJsonStringCompact() const -> QString {
  *  }
  * ".
  */
-auto MetaData::toJsonStringIndented() const -> QString {
+[[maybe_unused]] auto MetaData::toJsonStringIndented() const -> QString {
   return this->json_.toJson(QJsonDocument::Indented);
 }
 

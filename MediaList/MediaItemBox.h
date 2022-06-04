@@ -49,7 +49,7 @@ class MediaItemBox : public QGroupBox {
 
   mu void setMediaTitle(const QString &title);
   mu void setMediaArtist(const QString &artist);
-  mu void setImage(const QImage &img);
+  [[maybe_unused]] mu void setImage(const QImage &img);
   mu void setMetaData(const QMediaMetaData &metaData);
   mu void setMediaUrl(const QUrl &newMedia_url);
   mu void setButtonPlay(bool play);

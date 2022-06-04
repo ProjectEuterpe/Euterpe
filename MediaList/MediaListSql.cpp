@@ -109,7 +109,8 @@ auto MediaListSql::table() const -> QList<QSharedPointer<MediaData>> {
  * @param how: Sort in ascending order or in descending order.
  * @return Result.
  */
-auto MediaListSql::sort(const MediaDataEnum &key, const SortEnum &how) const
+[[maybe_unused]] auto MediaListSql::sort(const MediaDataEnum &key,
+                                         const SortEnum &how) const
     -> QList<QSharedPointer<MediaData>> {
   auto sortString =
       QString("select * from Media order by %1 %2")

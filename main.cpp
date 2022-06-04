@@ -1,8 +1,8 @@
 /**
  * @file main.cpp
  * @author Mikra Selene
- * @version 1.0
- * @date 2022.04.05
+ * @version OK
+ * @date
  *
  * @section LICENSE
  *
@@ -33,10 +33,8 @@ int main(int argc, char* argv[]) {
   auto app = QPointer<QApplication>(new QApplication(argc, argv));
   auto player = QPointer<Player>(new Player(Q_NULLPTR));
   auto controller = QPointer<PlayerController>(new PlayerController(player));
-
-  /* read qss*/
-  QString qss;
-  QFile qssFile(":/qss/main.qss");
+  auto qss = QString();
+  auto qssFile = QFile(":/qss/main.qss");
   qssFile.open(QFile::ReadOnly);
   if (qssFile.isOpen()) {
     qss = QLatin1String(qssFile.readAll());
