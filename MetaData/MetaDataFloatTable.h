@@ -1,7 +1,7 @@
 /**
  * @file MetaDataFloatTable.h
  * @author Mikra Selene
- * @version OK
+ * @version
  * @date
  *
  * @section LICENSE

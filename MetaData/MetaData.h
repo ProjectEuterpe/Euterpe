@@ -1,7 +1,7 @@
 /**
  * @file MetaData.h
  * @author Mikra Selene
- * @version OK
+ * @version
  * @date
  *
  * @section LICENSE

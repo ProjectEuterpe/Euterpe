@@ -1,7 +1,7 @@
 /**
  * @file MetaData.cpp
  * @author Mikra Selene
- * @version OK
+ * @version
  * @date
  *
  * @section LICENSE
@@ -50,7 +50,7 @@ auto MetaData::get(const QString& key) -> QVariant { return this->json_[key]; }
  * @brief To Qt JSON object.
  * @return
  */
-auto MetaData::toQtJsonObject() const -> QJsonObject {
+[[maybe_unused]] auto MetaData::toQtJsonObject() const -> QJsonObject {
   return this->json_.object();
 }
 
