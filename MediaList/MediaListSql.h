@@ -100,7 +100,7 @@ class MediaListSql {
   });
 };
 
-#undef nd
 #undef mu
+#undef nd
 
 #endif  // EUTERPE_MEDIALIST_MEDIALISTSQL_H_

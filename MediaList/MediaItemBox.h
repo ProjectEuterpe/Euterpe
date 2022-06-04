@@ -35,39 +35,49 @@ namespace Ui {
 class MediaItemBox;
 }
 
+#define nd [[nodiscard]]
+#define mu [[maybe_unused]]
+
 class MediaItemBox : public QGroupBox {
   Q_OBJECT
 
  public:
   explicit MediaItemBox(Player *parent = nullptr);
-  ~MediaItemBox();
-  void setTitle(QString title);
-  void setArtist(QString author);
-  void setImage(QImage img);
-  void setMetaData(QMediaMetaData data);
-  void setMediaUrl(const QUrl &newMedia_url);
-  QUrl getMediaUrl() const;
-  void setButtonPlay(bool play);
-  void setActive(bool active);
+  ~MediaItemBox() override;
 
- private:
-  Ui::MediaItemBox *ui_;
-  QMediaMetaData metadata_;
-  QString metadata_str_;
-  Player *player_;
-  QUrl media_url_;
-  bool isPlaying;
+  mu void setMediaTitle(const QString &title);
+  mu void setMediaArtist(const QString &artist);
+  mu void setImage(const QImage &img);
+  mu void setMetaData(const QMediaMetaData &metaData);
+  mu void setMediaUrl(const QUrl &newMedia_url);
+  mu void setButtonPlay(bool play);
+  mu void setActive(bool active);
+  nd auto getMediaUrl() const -> QUrl;
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "NotImplementedFunctions"
  signals:
   void play(QUrl url);
   void pause();
   void stop();
   void deleteMedia(QUrl url);
+#pragma clang diagnostic pop
 
  private slots:
   void onClickPlay();
   void onClickBtnInfo();
   void onClickBtnDel();
+
+ private:
+  Ui::MediaItemBox *ui_;
+  QMediaMetaData metaData_;
+  QString metaDataString_;
+  Player *player_;
+  QUrl mediaUrl_;
+  bool isPlaying_;
 };
+
+#undef mu
+#undef nd
 
 #endif  // EUTERPE_MEDIALIST_MEDIAITEMBOX_H_

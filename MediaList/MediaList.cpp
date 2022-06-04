@@ -38,8 +38,8 @@ void MediaList::addMediaItemBox(const QUrl& url, const QString& author,
   auto mediaItemBox = new MediaItemBox(this->player_);
   auto metaData = mediaPlayer_->metaData();
   mediaItemBox->setMetaData(metaData);
-  mediaItemBox->setArtist(author);
-  mediaItemBox->setTitle(title);
+  mediaItemBox->setMediaArtist(author);
+  mediaItemBox->setMediaTitle(title);
   mediaItemBox->setMediaUrl(url);
   if (!this->mediaList_.length()) {
     this->currentMediaItem_ = mediaItemBox;
@@ -66,6 +66,10 @@ void MediaList::onChangeMetaData() {  // ?
   QString artist = metaData.value(QMediaMetaData::AlbumTitle).toString();
   QString title = metaData.value(QMediaMetaData::Title).toString();
   this->addMediaItemBox(this->mediaPlayer_->source(), artist, title);
+}
+
+auto MediaList::databaseTable() -> QList<QSharedPointer<MediaData>> {
+  return this->database_->table();
 }
 
 void MediaList::insertToDatabase(const QUrl& url) {
@@ -107,20 +111,46 @@ void MediaList::playStop(bool play) {
 
 void MediaList::playPrevMedia() {
   qDebug() << "clicked: playPrevMedia";
-  if (currentIndex_ - 1 == -1) {
-    currentIndex_ = mediaList_.length() - 1;
-  } else {
-    currentIndex_ = (currentIndex_ - 1) % mediaList_.length();
+  switch (this->playOrder_) {
+    case PlayOrder::OnlyOnce:
+    case PlayOrder::SingleLoop:
+    case PlayOrder::InOrder: {
+      this->stepForward(-1);
+      break;
+    }
+    case PlayOrder::Random: {
+      auto rd = std::random_device();
+      auto mt = std::mt19937(rd());
+      auto dist = std::uniform_int_distribution<qsizetype>(
+          1, this->mediaList_.length() - 1);
+      this->stepForward(dist(mt));
+      break;
+    }
   }
-  currentMediaItem_->setActive(false);
-  currentMediaItem_ = mediaList_[currentIndex_];
-  currentMediaItem_->setActive(true);
-  emit changeCurrentMedia(currentMediaItem_->getMediaUrl());
 }
 
 void MediaList::playNextMedia() {
   qDebug() << "clicked: playNextMedia";
-  currentIndex_ = (currentIndex_ + 1) % mediaList_.length();
+  switch (this->playOrder_) {
+    case PlayOrder::OnlyOnce:
+    case PlayOrder::SingleLoop:
+    case PlayOrder::InOrder: {
+      this->stepForward(+1);
+      break;
+    }
+    case PlayOrder::Random: {
+      auto rd = std::random_device();
+      auto mt = std::mt19937(rd());
+      auto dist = std::uniform_int_distribution<qsizetype>(
+          1, this->mediaList_.length() - 1);
+      this->stepForward(dist(mt));
+      break;
+    }
+  }
+}
+
+void MediaList::stepForward(const qint64& step) {
+  currentIndex_ = (currentIndex_ + step) % mediaList_.length();
   currentMediaItem_->setActive(false);
   currentMediaItem_ = mediaList_[currentIndex_];
   currentMediaItem_->setActive(true);
@@ -179,27 +209,15 @@ void MediaList::onNextMedia() {
       break;
     }
     case PlayOrder::InOrder: {
-      this->currentIndex_ =
-          (this->currentIndex_ + 1) % this->mediaList_.length();
-      this->currentMediaItem_->setActive(false);
-      this->currentMediaItem_ = this->mediaList_[this->currentIndex_];
-      this->currentMediaItem_->setActive(true);
-      this->currentMediaItem_->setButtonPlay(false);
-      emit changeCurrentMedia(this->currentMediaItem_->getMediaUrl());
+      this->stepForward(+1);
       break;
     }
     case PlayOrder::Random: {
-      auto rd = std::random_device{};
-      auto mt = std::mt19937{rd()};
+      auto rd = std::random_device();
+      auto mt = std::mt19937(rd());
       auto dist = std::uniform_int_distribution<qsizetype>(
           1, this->mediaList_.length() - 1);
-      this->currentIndex_ =
-          (this->currentIndex_ + dist(mt) % this->mediaList_.length());
-      this->currentMediaItem_->setActive(false);
-      this->currentMediaItem_ = this->mediaList_[this->currentIndex_];
-      this->currentMediaItem_->setActive(true);
-      this->currentMediaItem_->setButtonPlay(false);
-      emit changeCurrentMedia(this->currentMediaItem_->getMediaUrl());
+      this->stepForward(dist(mt));
       break;
     }
   }

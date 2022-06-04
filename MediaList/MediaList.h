@@ -25,6 +25,8 @@
 #ifndef EUTERPE_MEDIALIST_MEDIALIST_H_
 #define EUTERPE_MEDIALIST_MEDIALIST_H_
 
+#include <QList>
+
 #include "../MetaData/MetaData.h"
 #include "../Player/GetFrameData.h"
 #include "../Player/Player.h"
@@ -33,19 +35,20 @@
 
 class MediaList : public QObject {
   Q_OBJECT
- public:
-  QSharedPointer<MediaListSql> database_;
 
  public:
   explicit MediaList(const QPointer<Player>& player_);
   ~MediaList() override = default;
 
+  auto databaseTable() -> QList<QSharedPointer<MediaData>>;
   void insertToDatabase(const QUrl& url);
   void addMediaItemBox(const QUrl& url, const QString& author,
                        const QString& title);
   void importMedia(const QUrl& url);
+
   void playStop(bool play);
 
+  void stepForward(const qint64& step);
   void playPrevMedia();
   void playNextMedia();
 
@@ -76,6 +79,7 @@ class MediaList : public QObject {
   PlayOrder playOrder_;
   QPointer<Player> player_;
   QPointer<QMediaPlayer> mediaPlayer_;
+  QSharedPointer<MediaListSql> database_;
 
   qsizetype currentIndex_;
   QPointer<MediaItemBox> currentMediaItem_;

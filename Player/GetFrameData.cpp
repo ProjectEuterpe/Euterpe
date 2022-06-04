@@ -45,15 +45,15 @@ GetFrameData::GetFrameData(const QPointer<Player> &player) {
           &GetFrameData::ReloadFrameData);
 }
 
-void GetFrameData::ReloadFrameData(const QVideoFrame &nowFrame) {  //播放器停止
+void GetFrameData::ReloadFrameData(const QVideoFrame &nowFrame) {
   if (!isVideo || done) return;
-  media_player->stop();
+  media_player->stop();  //播放器停止
   if (timeRange == -1)  //获取第一帧以获取帧的时间间隔,更换视频url时会调用
   {
     timeRange = (nowFrame.endTime() - nowFrame.startTime()) / 1000;
     qDebug() << "TimeRange:" << timeRange;
-  } else  //获取帧图像
-  {
+  } else {  //获取帧图像
+    qDebug() << "doneImage";
     image = nowFrame.toImage();
     emit doneGetFrame(image);
   }

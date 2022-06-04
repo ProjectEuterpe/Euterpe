@@ -108,13 +108,13 @@ PlayerController::PlayerController(const QPointer<Player> &player) {
   //帧展示
   connect(frameData, &GetFrameData::doneGetFrame, this,
           &PlayerController::showFrameData);
-  // connect(player_->ui_()->progress_slider, &ProgressSlider::onMouseMove,
-  // this,
-  //         &PlayerController::onProgressMouseOn);
+  connect(player_, &Player::showFrameSignal, this,
+          &PlayerController::onProgressMouseOn);
   //计算关闭帧
-  showFrameTimer = QPointer<QTimer>{new QTimer()};
-  showFrameTimer->setSingleShot(true);
-  connect(showFrameTimer, &QTimer::timeout, player_, &Player::closeFrameShow);
+  // showFrameTimer = QPointer<QTimer>{new QTimer()};
+  // showFrameTimer->setSingleShot(true);
+  // connect(showFrameTimer, &QTimer::timeout, player_,
+  // &Player::closeFrameShow);
 
   // 初始化媒体库列表
   initMediaList();
@@ -172,9 +172,8 @@ void PlayerController::initMediaList() {
   player_->addMediaItemSpacerV();
   mediaList = QPointer<MediaList>{new MediaList(player_)};
 
-  auto database_ = mediaList->database_;
   // get data from database...
-  for (const auto &row : database_->table()) {
+  for (const auto &row : mediaList->databaseTable()) {
     // qDebug() << QUrl("file://" + row->mediaPath);
     player_->initMedia(QUrl("file://" + row->mediaPath));
     auto xx = MetaData(row->metaData);
@@ -400,10 +399,7 @@ void PlayerController::onProgressMouseOn(const double per) {
   frameData->GetTargetFrameImage(target);
 }
 
-void PlayerController::showFrameData(QImage image) {
-  player_->setFrame(image);
-  showFrameTimer->start(1500);
-}
+void PlayerController::showFrameData(QImage image) { player_->setFrame(image); }
 
 /**
  * @brief Handler called when the value of `btn_volume` button is clicked.

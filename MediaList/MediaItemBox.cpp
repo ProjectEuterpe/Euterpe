@@ -30,7 +30,7 @@ MediaItemBox::MediaItemBox(Player *parent)
     : QGroupBox(parent), ui_(new Ui::MediaItemBox) {
   ui_->setupUi(this);
   player_ = parent;
-  isPlaying = false;
+  isPlaying_ = false;
 
   connect(ui_->btnPlay, &QPushButton::clicked, this,
           &MediaItemBox::onClickPlay);
@@ -42,31 +42,33 @@ MediaItemBox::MediaItemBox(Player *parent)
 
 MediaItemBox::~MediaItemBox() { delete ui_; }
 
-void MediaItemBox::setTitle(QString title) {
-  if (title == "") title = "Unknown Title";
-  ui_->textTitle->setText(title);
-  ui_->textTitle->setToolTip(title);
+[[maybe_unused]] void MediaItemBox::setMediaTitle(const QString &title) {
+  auto text = title.isEmpty() ? tr("Unknown Title") : title;
+  ui_->textTitle->setText(text);
+  ui_->textTitle->setToolTip(text);
 }
 
-void MediaItemBox::setArtist(QString artist) {
-  if (artist == "") artist = "Unknown Artist";
-  ui_->textArtist->setText(artist);
-  ui_->textArtist->setToolTip(artist);
+void MediaItemBox::setMediaArtist(const QString &artist) {
+  auto text = artist.isEmpty() ? "V/A" : artist;
+  ui_->textArtist->setText(text);
+  ui_->textArtist->setToolTip(text);
 }
 
-void MediaItemBox::setMetaData(QMediaMetaData data) {
-  metadata_ = data;
-  metadata_str_ = "";
-  for (auto k : metadata_.keys()) {
-    metadata_str_ +=
-        metadata_.metaDataKeyToString(k) + ":" + metadata_[k].toString() + '\n';
+void MediaItemBox::setImage(const QImage &img) {}
+
+void MediaItemBox::setMetaData(const QMediaMetaData &data) {
+  metaData_ = data;
+  metaDataString_ = "";
+  for (auto k : metaData_.keys()) {
+    metaDataString_ +=
+        metaData_.metaDataKeyToString(k) + ":" + metaData_[k].toString() + '\n';
   }
 }
 
 void MediaItemBox::setMediaUrl(const QUrl &newMedia_url) {
-  media_url_ = newMedia_url;
+  mediaUrl_ = newMedia_url;
 }
-QUrl MediaItemBox::getMediaUrl() const { return media_url_; }
+QUrl MediaItemBox::getMediaUrl() const { return mediaUrl_; }
 
 void MediaItemBox::setButtonPlay(bool play) {
   qDebug() << "setButtonPlay" << play;
@@ -78,30 +80,30 @@ void MediaItemBox::setActive(bool active) {
   QString color = active ? "background-color: #E5E5E5" : "";
   this->setStyleSheet(color);
   if (!active) {
-    isPlaying = false;
-    setButtonPlay(!isPlaying);
+    isPlaying_ = false;
+    setButtonPlay(!isPlaying_);
   } else {
     emit pause();
   }
 }
 
 void MediaItemBox::onClickPlay() {
-  qDebug() << "onClickPlay" << isPlaying;
-  setButtonPlay(isPlaying);
-  if (isPlaying) {
+  qDebug() << "onClickPlay" << isPlaying_;
+  setButtonPlay(isPlaying_);
+  if (isPlaying_) {
     emit pause();
   } else {
-    emit play(media_url_);
+    emit play(mediaUrl_);
   }
-  isPlaying = !isPlaying;
+  isPlaying_ = !isPlaying_;
 }
 
 void MediaItemBox::onClickBtnInfo() {
   qDebug() << "clicked: BtnInfo";
-  player_->addFloatTable(ui_->btnInfo, metadata_str_, 1);
+  player_->addFloatTable(ui_->btnInfo, metaDataString_, 1);
 }
 
 void MediaItemBox::onClickBtnDel() {
   qDebug() << "clicked: BtnDel";
-  emit deleteMedia(media_url_);
+  emit deleteMedia(mediaUrl_);
 }
