@@ -54,10 +54,13 @@ Player::Player(const QPointer<QWidget>& parent)
   connect(ui_->isfullScreen, &QPushButton::clicked,  //
           this, &Player::onClickFullScreen);
   isFullScreen_ = false;
+  isShowFrame=false;
   ui_->videoWidget->installEventFilter(this);
   ui_->videoWidget->setAttribute(Qt::WA_Hover, true);
+  ui_->progressSlider->installEventFilter(this);
+  ui_->progressSlider->setAttribute(Qt::WA_Hover,true);
   frame_ = QPointer<MetaDataFloatTable>{new MetaDataFloatTable()};
-  frame_->setWindowFlags(Qt::Popup);
+  frame_->setWindowFlags(Qt::Popup|Qt::Tool|Qt::FramelessWindowHint);
   frame_->setHidden(true);
   stacked_widget = QPointer<QStackedWidget>{new QStackedWidget};
   ui_->stacked_widget->setCurrentWidget(ui_->initWidget);
@@ -198,6 +201,7 @@ void Player::addFloatTable(QPushButton* info, QString str, int posType) {
 }
 
 void Player::setFrame(QImage image) {
+
   qDebug() << "set frame_";
   frame_->setImage(
       image.scaled(195, 115, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
@@ -206,6 +210,7 @@ void Player::setFrame(QImage image) {
       ui_->progressSlider->mapToGlobal(QPoint(0, 0)).y() - frame_->height());
 
   frame_->show();
+isShowFrame=true;
 }
 
 void Player::setFramePos(float x) {
@@ -215,7 +220,10 @@ void Player::setFramePos(float x) {
 }
 
 void Player::closeFrameShow() {
+    if(!isShowFrame)
+        return;
   frame_->setHidden(true);
+  isShowFrame=false;
   qDebug() << "closeFrame";
 }
 
@@ -281,6 +289,11 @@ bool Player::endOfMedia() const {
 }
 
 auto Player::url() const -> QUrl { return mediaPlayer_->source(); }
+
+bool Player::isFullScreen() const
+{
+return isFullScreen_;
+}
 #pragma endregion
 
 #pragma region  // region: private slots
@@ -343,6 +356,19 @@ bool Player::eventFilter(QObject* obj,
       ui_->controlPad->setHidden(false);
     }
   }
+if(obj==ui_->progressSlider )
+   {
+    if(e->type()==QEvent::ToolTip)
+   {
+QHelpEvent*helpEvent=static_cast<QHelpEvent*>(e);
+float per=helpEvent->pos().x()*1.0/ui_->progressSlider->width();
+emit showFrameSignal(per);
+    }
+    else  if(e->type()!=QEvent::Paint)
+    {
+        closeFrameShow();
+    }
+}
 
   // 事件交给上层对话框进行处理
   return QWidget::eventFilter(obj, e);

@@ -108,13 +108,12 @@ PlayerController::PlayerController(const QPointer<Player> &player) {
   //帧展示
   connect(frameData, &GetFrameData::doneGetFrame, this,
           &PlayerController::showFrameData);
-  // connect(player_->ui_()->progress_slider, &ProgressSlider::onMouseMove,
-  // this,
-  //         &PlayerController::onProgressMouseOn);
+  connect(player_, &Player::showFrameSignal,
+   this,   &PlayerController::onProgressMouseOn);
   //计算关闭帧
-  showFrameTimer = QPointer<QTimer>{new QTimer()};
-  showFrameTimer->setSingleShot(true);
-  connect(showFrameTimer, &QTimer::timeout, player_, &Player::closeFrameShow);
+  //showFrameTimer = QPointer<QTimer>{new QTimer()};
+  //showFrameTimer->setSingleShot(true);
+ // connect(showFrameTimer, &QTimer::timeout, player_, &Player::closeFrameShow);
 
   // 初始化媒体库列表
   initMediaList();
@@ -236,7 +235,7 @@ void PlayerController::playAudio() {
   if (artist == "") player_->ui()->artist->setText("Unknown");
   if (album == "") player_->ui()->album->setText("Unknown");
   if (img.isNull()) {
-    QImage *img = new QImage;
+      QImage *img = new QImage;
     img->load(":/images/2.jpg");
     QPixmap pixmap = QPixmap::fromImage(*img);
     QPixmap fitpixmap = pixmap.scaled(150, 150, Qt::IgnoreAspectRatio,
@@ -388,7 +387,8 @@ void PlayerController::onTimerStart() {
 void PlayerController::onTimerEnd() {
   //隐藏
   qDebug() << "TimeOut";
-  if (player_->isFullScreen()) player_->ui()->controlPad->setHidden(true);
+  if (player_->isFullScreen())
+      player_->ui()->controlPad->setHidden(true);
   showBarTimer->stop();
 }
 
@@ -402,7 +402,6 @@ void PlayerController::onProgressMouseOn(const double per) {
 
 void PlayerController::showFrameData(QImage image) {
   player_->setFrame(image);
-  showFrameTimer->start(1500);
 }
 
 /**

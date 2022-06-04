@@ -75,6 +75,7 @@ class Player : public QWidget {
   //展示帧图相关
   void setFrame(QImage image);
   void setFramePos(float x);
+void closeFrameShow();
 
   void setMediaUrl(const QUrl &newMedia_url);
   void addFloatTable(QPushButton *info, QString text, int posType = 0);
@@ -96,10 +97,8 @@ class Player : public QWidget {
   nd auto comboBoxRate() const -> qreal;
   nd bool endOfMedia() const;
   nd auto url() const -> QUrl;
-
+  nd auto isFullScreen()const->bool;
  public slots:
-  //定时关闭展示的frame
-  void closeFrameShow();
   void playMedia();
   void stopMedia();
   void pauseMedia();
@@ -110,7 +109,8 @@ class Player : public QWidget {
   void showBar();
   // 导入媒体
   void addMedia(QUrl url);
-
+//展示帧
+  void showFrameSignal(double per);
  private slots:
   void progressing(qint64 progress);
   void onClickOpen();
@@ -127,6 +127,7 @@ class Player : public QWidget {
   QPointer<QMediaPlayer> mediaPlayer_;
   QPointer<QAudioOutput> audioOutput_;
   bool isFullScreen_;
+  bool isShowFrame;
   QPointer<MetaDataFloatTable> frame_;
   QPointer<QStackedWidget> stacked_widget;
 
