@@ -62,8 +62,8 @@ Player::Player(const QPointer<QWidget>& parent)
   frame_ = QPointer<MetaDataFloatTable>{new MetaDataFloatTable()};
   frame_->setWindowFlags(Qt::Popup | Qt::Tool | Qt::FramelessWindowHint);
   frame_->setHidden(true);
-  stacked_widget = QPointer<QStackedWidget>{new QStackedWidget};
-  ui_->stacked_widget->setCurrentWidget(ui_->initWidget);
+  stackedWidget = QPointer<QStackedWidget>{new QStackedWidget};
+  ui_->stackedWidget->setCurrentWidget(ui_->initWidget);
   QImage* img = new QImage;
   img->load(":/images/1.jpg");
   QPixmap pixmap = QPixmap::fromImage(*img);

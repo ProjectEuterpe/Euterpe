@@ -63,7 +63,7 @@
 			  <number>0</number>
 			</property>
 			<item>
-			  <widget class="QStackedWidget" name="stacked_widget">
+			  <widget class="QStackedWidget" name="stackedWidget">
 				<widget class="QVideoWidget" name="videoWidget"/>
 				<widget class="QWidget" name="audioWidget">
 				  <widget class="QLabel" name="img">

@@ -132,7 +132,7 @@ class Player : public QWidget {
   bool isFullScreen_;
   bool isShowFrame;
   QPointer<MetaDataFloatTable> frame_;
-  QPointer<QStackedWidget> stacked_widget;
+  QPointer<QStackedWidget> stackedWidget;
 
  public:
   QUrl mediaUrl_;

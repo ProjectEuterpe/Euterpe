@@ -1,7 +1,7 @@
 ﻿/*
- * @file
+ * @file PlayerController.h
  * @author Mikra Selene
- * @version
+ * @version OK
  * @date
  *
  * @section LICENSE
@@ -32,6 +32,8 @@
 #include "../Player/Player.h"
 #include "PlayerShortcut.h"
 
+#define nd [[nodiscard]]
+
 class PlayerController : public QWidget {
   Q_OBJECT
 
@@ -39,13 +41,12 @@ class PlayerController : public QWidget {
   explicit PlayerController(const QPointer<Player>& player);
   ~PlayerController() override = default;
 
-  //整理获取元数据
-  //获取单一元数据
-  auto getMetaData(const QMediaMetaData::Key& key) -> QVariant;
-
-  // 初始化媒体库列表
+ private:
+  nd auto getMetaData(const QMediaMetaData::Key& key) const -> QVariant;
   void initMediaList();
-  void addMediaItem(QUrl url);
+  void addMediaItem(const QUrl& url) const;
+  void playVideo() const;
+  void playAudio() const;
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "NotImplementedFunctions"
@@ -53,14 +54,11 @@ class PlayerController : public QWidget {
   void play();
   void pause();
   void stop();
-  void sequencePrevNext(const Sequence& seq);
+  void sequence(const Sequence& seq);
   void info();
-  void btn_volume();
-  void btn_play_order();
-  void box();
-  void changeRate(qreal rate);
-  void changeProgress(qint64 progress);
-  void changeVolume(qreal volume);
+  void changeProgress(const qint64& progress);
+  void changeVolume(const qreal& volume);
+  void changeRate(const qreal& rate);
 #pragma clang diagnostic pop
 
  private slots:
@@ -72,35 +70,28 @@ class PlayerController : public QWidget {
   void onChangeProgress();
   void onChangeVolume();
   void onChangeRate();
-  void onClickBtnVolume();
-  void atEnd();
+  void onClickMute();
+  void onMediaStatusChanged();
   void onTimerStart();
   void onTimerEnd();
-  //查看url是视频还是音频
-  void checkUrl();
-  //进度条实现帧图展现
-  void onProgressMouseOn(const double);
-  void showFrameData(QImage image);
-  //快捷键使用部分
-  void setVolumeValue(const int& add);
-  void setProgressValue(const int& add);
   void onChangeMetaData();
   void onChangeDuration();
-  void onChangeCurrMedia(QUrl url);
+  void onProgressMouseOn(const qfloat16& percent);
+  void onChangeCurrentMedia(const QUrl& url);
+  void checkUrl();
+  void showFrameData(const QImage& image);
   void showInitWidget();
+  void setVolumeValue(const qint32& delta);
+  void setProgressValue(const qint32& delta);
 
  private:
-  //音视频控制
-  void playVideo();
-  void playAudio();
   QPointer<Player> player_;
-  //鼠标不移动，计时5秒
-  QPointer<QTimer> showBarTimer;
-  //帧信息获取指针
-  QPointer<GetFrameData> frameData;
-  QPointer<MediaItemBox> curMediaItemBox;
-  QPointer<MediaList> mediaList;
+  QPointer<QTimer> showBarTimer_;
+  QPointer<GetFrameData> frameData_;
+  QPointer<MediaList> mediaList_;
   QPointer<PlayerShortcut> shortcut_;
 };
+
+#undef nd
 
 #endif  // EUTERPE_PLAYERCONTROLLER_PLAYERCONTROLLER_H_

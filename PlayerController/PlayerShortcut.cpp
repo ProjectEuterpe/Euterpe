@@ -1,7 +1,7 @@
 /**
  * @file PlayerShortcut.cpp
  * @author Mikra Selene
- * @version
+ * @version OK
  * @date
  *
  * @section LICENSE
@@ -30,14 +30,14 @@
  * @brief Player shortcut.
  * @param parent
  */
-PlayerShortcut::PlayerShortcut(const QPointer<Player> &parent) {
-  player_ = parent;
-  shortcutList_.clear();
-  initBasicShortcuts();
+PlayerShortcut::PlayerShortcut(const QPointer<Player> &player)
+    : player_(player) {
+  this->shortcutList_.clear();
+  this->initBasicShortcuts();
 }
 
 /**
- * @brief
+ * @brief Generate shortcut.
  * @param shortcut
  * @return
  */
@@ -45,7 +45,7 @@ auto PlayerShortcut::generateShortcut(const QString &shortcut)
     -> QPointer<QShortcut> {
   auto newShortcut = QPointer{new QShortcut(QKeySequence(shortcut), player_)};
   newShortcut->setContext(Qt::ApplicationShortcut);
-  shortcutList_.insert(shortcut, newShortcut);
+  this->shortcutList_.insert(shortcut, newShortcut);
   return newShortcut;
 }
 
@@ -56,8 +56,8 @@ auto PlayerShortcut::generateShortcut(const QString &shortcut)
  * @param button
  */
 void PlayerShortcut::addShortcut(const QString &shortcut, QPushButton *button) {
-  if (!shortcutList_.contains(shortcut)) {
-    connect(generateShortcut(shortcut), &QShortcut::activated, button,
+  if (!this->shortcutList_.contains(shortcut)) {
+    connect(this->generateShortcut(shortcut), &QShortcut::activated, button,
             &QPushButton::click);
   }
 }
@@ -66,19 +66,17 @@ void PlayerShortcut::addShortcut(const QString &shortcut, QPushButton *button) {
  * @brief Add (connect) a shortcut to a slider. if the shortcut has already been
  * connected, do nothing.
  * @param shortcut
- * @param delta amount of change
+ * @param delta: Amount of change.
  * @param choose
  */
 void PlayerShortcut::addShortcut(const QString &shortcut, const qint32 &delta,
                                  const SliderShortcut &choose) {
-  if (!shortcutList_.contains(shortcut)) {
-    connect(generateShortcut(shortcut), &QShortcut::activated, this, [=]() {
-      if (choose == SliderShortcut::Volume) {
-        emit changeVolume(delta);
-      } else if (choose == SliderShortcut::Progress) {
-        emit changeProgress(delta);
-      }
-    });
+  if (!this->shortcutList_.contains(shortcut)) {
+    connect(this->generateShortcut(shortcut), &QShortcut::activated, this,
+            [=]() {
+              emit choose == SliderShortcut::Volume ? changeVolume(delta)
+                                                    : changeProgress(delta);
+            });
   }
 }
 
@@ -87,11 +85,11 @@ void PlayerShortcut::addShortcut(const QString &shortcut, const qint32 &delta,
  * @param shortcut
  */
 void PlayerShortcut::removeShortcut(const QString &shortcut) {
-  auto target = shortcutList_.find(shortcut);
-  if (target != shortcutList_.end()) {
+  auto target = this->shortcutList_.find(shortcut);
+  if (target != this->shortcutList_.end()) {
     disconnect(target.value(), Q_NULLPTR, Q_NULLPTR, Q_NULLPTR);
     delete target.value();
-    shortcutList_.remove(shortcut);
+    this->shortcutList_.remove(shortcut);
   }
 }
 
@@ -99,35 +97,35 @@ void PlayerShortcut::removeShortcut(const QString &shortcut) {
  * @brief ...
  */
 void PlayerShortcut::initBasicShortcuts() {
-  addShortcut("space", player_->ui()->play);
-  addShortcut("ctrl+left", player_->ui()->prev);
-  addShortcut("ctrl+right", player_->ui()->next);
-  addShortcut("ctrl+i", player_->ui()->open);
-  addShortcut("ctrl+f", player_->ui()->isfullScreen);
-  addShortcut("ctrl+down", -20, SliderShortcut::Volume);
-  addShortcut("ctrl+up", +20, SliderShortcut::Volume);
-  addShortcut("down", +5, SliderShortcut::Progress);
-  addShortcut("up", -5, SliderShortcut::Progress);
-  addShortcut("left", -1, SliderShortcut::Progress);
-  addShortcut("right", +1, SliderShortcut::Progress);
+  this->addShortcut("space", this->player_->ui()->play);
+  this->addShortcut("ctrl+left", this->player_->ui()->prev);
+  this->addShortcut("ctrl+right", this->player_->ui()->next);
+  this->addShortcut("ctrl+i", this->player_->ui()->open);
+  this->addShortcut("ctrl+f", this->player_->ui()->isfullScreen);
+  this->addShortcut("ctrl+down", -20, SliderShortcut::Volume);
+  this->addShortcut("ctrl+up", +20, SliderShortcut::Volume);
+  this->addShortcut("down", +5, SliderShortcut::Progress);
+  this->addShortcut("up", -5, SliderShortcut::Progress);
+  this->addShortcut("left", -1, SliderShortcut::Progress);
+  this->addShortcut("right", +1, SliderShortcut::Progress);
 }
 
 /**
  * @brief ...
  */
 void PlayerShortcut::playAudio() {
-  removeShortcut("down");
-  removeShortcut("up");
-  removeShortcut("left");
-  removeShortcut("right");
+  this->removeShortcut("down");
+  this->removeShortcut("up");
+  this->removeShortcut("left");
+  this->removeShortcut("right");
 }
 
 /**
  * @brief ...
  */
 void PlayerShortcut::playVideo() {
-  addShortcut("down", +5, SliderShortcut::Progress);
-  addShortcut("up", -5, SliderShortcut::Progress);
-  addShortcut("left", -1, SliderShortcut::Progress);
-  addShortcut("right", +1, SliderShortcut::Progress);
+  this->addShortcut("down", +5, SliderShortcut::Progress);
+  this->addShortcut("up", -5, SliderShortcut::Progress);
+  this->addShortcut("left", -1, SliderShortcut::Progress);
+  this->addShortcut("right", +1, SliderShortcut::Progress);
 }

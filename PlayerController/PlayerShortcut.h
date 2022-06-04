@@ -1,7 +1,7 @@
 /**
  * @file PlayerShortcut.h
  * @author Mikra Selene
- * @version
+ * @version OK
  * @date
  *
  * @section LICENSE
@@ -34,7 +34,7 @@ class PlayerShortcut : public QObject {
   enum class SliderShortcut { Volume, Progress };
 
  public:
-  explicit PlayerShortcut(const QPointer<Player>& parent = Q_NULLPTR);
+  explicit PlayerShortcut(const QPointer<Player>& player = Q_NULLPTR);
   ~PlayerShortcut() override = default;
 
   auto generateShortcut(const QString& shortcut) -> QPointer<QShortcut>;
@@ -47,9 +47,12 @@ class PlayerShortcut : public QObject {
   void playAudio();
   void playVideo();
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "NotImplementedFunctions"
  signals:
-  void changeVolume(int add);
-  void changeProgress(int add);
+  void changeVolume(const qint32& add);
+  void changeProgress(const qint32& add);
+#pragma clang diagnostic pop
 
  private:
   QPointer<Player> player_;
