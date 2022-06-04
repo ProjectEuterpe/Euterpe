@@ -110,10 +110,6 @@ PlayerController::PlayerController(const QPointer<Player> &player) {
           &PlayerController::showFrameData);
   connect(player_, &Player::showFrameSignal,
    this,   &PlayerController::onProgressMouseOn);
-  //计算关闭帧
-  //showFrameTimer = QPointer<QTimer>{new QTimer()};
-  //showFrameTimer->setSingleShot(true);
- // connect(showFrameTimer, &QTimer::timeout, player_, &Player::closeFrameShow);
 
   // 初始化媒体库列表
   initMediaList();

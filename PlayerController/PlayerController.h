@@ -97,8 +97,7 @@ class PlayerController : public QWidget {
   QPointer<Player> player_;
   //鼠标不移动，计时5秒
   QPointer<QTimer> showBarTimer;
-  //计时300ms，关闭展示的Frame
-  QPointer<QTimer> showFrameTimer;
+  //帧信息获取指针
   QPointer<GetFrameData> frameData;
   QPointer<MediaItemBox> curMediaItemBox;
   QPointer<MediaList> mediaList;
