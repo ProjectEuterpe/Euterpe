@@ -1,7 +1,7 @@
 /**
  * @file MetaDataFloatTable.cpp
  * @author Mikra Selene
- * @version
+ * @version OK
  * @date
  *
  * @section LICENSE
@@ -27,7 +27,7 @@
 MetaDataFloatTable::MetaDataFloatTable(QWidget *parent)
     : QWidget(parent), ui_(new Ui::MetaDataFloatTable) {
   this->ui_->setupUi(this);
-  QFont font;
+  auto font = QFont();
   font.setPixelSize(12);
   this->ui_->textEdit->setFont(font);
 }
@@ -46,5 +46,5 @@ void MetaDataFloatTable::setImage(const QImage &image) {
 
 void MetaDataFloatTable::setText(const QString &text) {
   this->ui_->textEdit->setText(
-      text == "" ? tr("You haven't selected a media to play ~") : text);
+      text.isEmpty() ? tr("You haven't selected a media to play ~") : text);
 }
