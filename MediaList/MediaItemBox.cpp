@@ -97,6 +97,7 @@ void MediaItemBox::onClickPlay() {
 }
 
 void MediaItemBox::onClickInfo() {
+  metaDataString_ = MetaData(player_->metaData()).toPrettyString();
   this->player_->addFloatTable(this->ui_->info, this->metaDataString_,
                                Position::RIGHT);
 }

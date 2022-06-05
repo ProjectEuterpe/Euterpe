@@ -189,6 +189,7 @@ void MediaList::stepForward(const qint64& step) {
   this->currentMediaItem_->setActive(false);
   this->currentMediaItem_ = this->mediaList_[this->currentIndex_];
   this->currentMediaItem_->setActive(true);
+  currentMediaItem_->setButtonPlay(false);
   emit this->changeCurrentMedia(this->currentMediaItem_->getMediaUrl());
 }
 
