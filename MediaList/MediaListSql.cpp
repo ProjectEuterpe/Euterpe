@@ -154,7 +154,7 @@ void MediaListSql::insert(const QSharedPointer<MediaData> &row) const {
  */
 void MediaListSql::remove(const QSharedPointer<MediaData> &row) const {
   auto removeString =
-      QString("delete from Media where mediaPath='%1'").arg(row->mediaPath);
+      QString("delete from Media where media_path='%1'").arg(row->mediaPath);
   std::ignore = this->query(removeString);
 }
 
@@ -170,7 +170,7 @@ void MediaListSql::update(const QSharedPointer<MediaData> &row,
   bool keyIsInt = key == MediaDataEnum::PLAY_TIMESTAMP ||
                   key == MediaDataEnum::ADD_TIMESTAMP;
   auto updateString =
-      QString("update Media set %1=%2 where mediaPath='%3'")
+      QString("update Media set %1=%2 where media_path='%3'")
           .arg(this->mediaDataEnum_.value(key),
                QString(keyIsInt ? "%1" : "'%1'").arg(value.toString()))
           .arg(row->mediaPath);

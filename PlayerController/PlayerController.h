@@ -49,6 +49,7 @@ class PlayerController : public QWidget {
   void addMediaItem(const QUrl& url) const;
   void playVideo() const;
   void playAudio() const;
+  void setTitle() const;
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "NotImplementedFunctions"

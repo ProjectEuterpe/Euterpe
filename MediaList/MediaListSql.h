@@ -86,12 +86,12 @@ class MediaListSql {
   QSharedPointer<ConnectionArgs> connectionArgs_;
   QMap<MediaDataEnum, QString> mediaDataEnum_ = QMap<MediaDataEnum, QString>({
       {MediaDataEnum::MD5, "md5"},
-      {MediaDataEnum::MEDIA_NAME, "mediaName"},
-      {MediaDataEnum::MEDIA_PATH, "mediaPath"},
+      {MediaDataEnum::MEDIA_NAME, "media_name"},
+      {MediaDataEnum::MEDIA_PATH, "media_path"},
       {MediaDataEnum::LABEL, "label"},
-      {MediaDataEnum::METADATA, "metaData"},
-      {MediaDataEnum::PLAY_TIMESTAMP, "playTimestamp"},
-      {MediaDataEnum::ADD_TIMESTAMP, "addTimestamp"},
+      {MediaDataEnum::METADATA, "meta_data"},
+      {MediaDataEnum::PLAY_TIMESTAMP, "play_timestamp"},
+      {MediaDataEnum::ADD_TIMESTAMP, "add_timestamp"},
   });
   QMap<SortEnum, QString> sortEnum_ = QMap<SortEnum, QString>({
       {SortEnum::DESC, "desc"},

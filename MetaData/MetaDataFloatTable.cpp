@@ -40,8 +40,10 @@ void MetaDataFloatTable::setPosition(const qint32 &x, const qint32 &y) {
 }
 
 void MetaDataFloatTable::setImage(const QImage &image) {
-  this->ui_->textEdit->setText(tr(""));
-  this->ui_->textEdit->textCursor().insertImage(image);
+  if (!image.isNull()) {
+    this->ui_->textEdit->setText(tr(""));
+    this->ui_->textEdit->textCursor().insertImage(image);
+  }
 }
 
 void MetaDataFloatTable::setText(const QString &text) {

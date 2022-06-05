@@ -63,10 +63,12 @@ Player::Player(const QPointer<QWidget>& parent)
   auto img = new QImage;
   img->load(":/images/1.jpg");
   auto pixmap = QPixmap::fromImage(*img);
-  auto fitPixmap =
-      pixmap.scaled(311, 231, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+  if (!pixmap.isNull()) {
+    auto fitPixmap = pixmap.scaled(311, 231, Qt::IgnoreAspectRatio,
+                                   Qt::SmoothTransformation);
+    this->ui_->label_2->setPixmap(fitPixmap);
+  }
   this->ui_->label_2->setScaledContents(true);
-  this->ui_->label_2->setPixmap(fitPixmap);
 }
 
 Player::~Player() { delete this->ui_; }
@@ -176,8 +178,10 @@ void Player::setIsFullScreenIcon() {
 }
 
 void Player::setFrame(const QImage& image) {
-  this->frame_->setImage(
-      image.scaled(195, 115, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+  if (!image.isNull()) {
+    this->frame_->setImage(image.scaled(195, 115, Qt::IgnoreAspectRatio,
+                                        Qt::SmoothTransformation));
+  }
   this->frame_->setPosition(
       this->frame_->x() - this->frame_->width() / 2,
       this->ui_->progressSlider->mapToGlobal(QPoint(0, 0)).y() -

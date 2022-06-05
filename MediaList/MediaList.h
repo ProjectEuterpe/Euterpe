@@ -46,6 +46,8 @@ class MediaList : public QObject {
 
   nd auto databaseTable() const -> QList<QSharedPointer<MediaData>>;
   void insertToDatabase(const QUrl& url) const;
+  auto findInDatabase(const QUrl& url) const
+      -> QList<QSharedPointer<MediaData>>;
   void addMediaItemBox(const QUrl& url, const QString& artist,
                        const QString& title);
   void importMedia(const QUrl& url) const;

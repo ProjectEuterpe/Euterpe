@@ -80,6 +80,16 @@ void MediaList::insertToDatabase(const QUrl& url) const {
 }
 
 /**
+ * @brief Find a media in the database.
+ * @param url
+ * @return
+ */
+auto MediaList::findInDatabase(const QUrl& url) const
+    -> QList<QSharedPointer<MediaData>> {
+  return this->database_->find(MediaDataEnum::MEDIA_PATH, url.path());
+}
+
+/**
  * @brief Add a media item box.
  * @param url
  * @param artist
@@ -207,7 +217,7 @@ void MediaList::checkCurrentMedia(const QUrl& url) {
     if (iterator != this->mediaList_.end()) {
       this->currentMediaItem_->setActive(false);
       this->currentMediaItem_ = *iterator;
-      this->currentIndex_ = std::distance(iterator, this->mediaList_.begin());
+      this->currentIndex_ = std::distance(this->mediaList_.begin(), iterator);
       this->currentMediaItem_->setActive(true);
       emit changeCurrentMedia(url);
       qDebug() << "index changed: current index =" << this->currentIndex_;
@@ -300,7 +310,7 @@ void MediaList::onRemoveMedia(const QUrl& url) {
   if (iterator != this->mediaList_.end()) {
     this->player_->deleteMediaItemBox(*iterator);  // TODO: Change to QPointer?
     this->mediaList_.erase(iterator);
-    auto index = std::distance(iterator, this->mediaList_.begin());
+    auto index = std::distance(this->mediaList_.begin(), iterator);
     if (index == this->currentIndex_) {
       // if remove the current playing media, play next media.
       this->onNextMedia();

@@ -136,9 +136,10 @@ void PlayerController::initMediaList() {
   for (const auto &row : this->mediaList_->databaseTable()) {
     this->player_->initMedia(QUrl("file://" + row->mediaPath));
     auto metaData = MetaData(row->metaData);
-    this->mediaList_->addMediaItemBox(QUrl("file://" + row->mediaPath),
-                                      metaData.get("Album title").toString(),
-                                      metaData.get("Title").toString());
+    this->mediaList_->addMediaItemBox(
+        QUrl("file://" + row->mediaPath),
+        metaData.get("Contributing artist").toString(),
+        metaData.get("Title").toString());
   }
 }
 
@@ -151,6 +152,7 @@ void PlayerController::playVideo() const {
   this->frameData_->setIsVideo(true);
   this->player_->ui()->stackedWidget->setCurrentWidget(
       this->player_->ui()->videoWidget);
+  this->setTitle();
 }
 
 void PlayerController::playAudio() const {
@@ -195,6 +197,19 @@ void PlayerController::playAudio() const {
   }
   this->player_->ui()->stackedWidget->setCurrentWidget(
       this->player_->ui()->audioWidget);
+  this->setTitle();
+}
+
+void PlayerController::setTitle() const {
+  for (const auto &row :
+       this->mediaList_->findInDatabase(this->player_->url())) {
+    auto metaData = MetaData(row->metaData);
+    auto artist = metaData.get("Contributing artist").toString();
+    auto title = metaData.get("Title").toString();
+    this->player_->setWindowTitle(
+        QString("%1 - %2").arg(artist.isEmpty() ? tr("V/A") : artist,
+                               title == "" ? tr("Untitled") : title));
+  }
 }
 
 #pragma endregion
@@ -215,16 +230,6 @@ void PlayerController::onClickPlay() {
   emit playing ? this->pause() : this->play();
   this->player_->setButtonPlayIcon(playing);
   this->mediaList_->playStop(playing);
-  // default values of artist and title will be "Untitled" and "V/A"
-  auto metadata = this->player_->metaData();
-  auto artist = metadata.value(QMediaMetaData::AlbumArtist).toString();
-  auto title = metadata.value(QMediaMetaData::Title).toString();
-  if (artist.isEmpty()) {
-    artist = metadata.value(QMediaMetaData::ContributingArtist).toString();
-  }
-  this->player_->setWindowTitle(
-      QString("%1 - %2").arg(artist.isEmpty() ? tr("V/A") : artist,
-                             title == "" ? tr("Untitled") : title));
 }
 
 /**
