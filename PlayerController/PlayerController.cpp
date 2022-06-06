@@ -147,7 +147,7 @@ void PlayerController::addMediaItem(const QUrl &url) const {
   this->mediaList_->importMedia(url);
 }
 
-void PlayerController::playVideo() const {
+void PlayerController::playVideo() {
   this->shortcut_->playVideo();
   this->frameData_->setIsVideo(true);
   this->player_->ui()->stackedWidget->setCurrentWidget(
@@ -155,7 +155,7 @@ void PlayerController::playVideo() const {
   this->setTitle();
 }
 
-void PlayerController::playAudio() const {
+void PlayerController::playAudio() {
   this->shortcut_->playAudio();
   this->frameData_->setIsVideo(false);
   // album cover
@@ -383,6 +383,7 @@ void PlayerController::onProgressMouseOn(const qfloat16 &percent) {
  */
 void PlayerController::onChangeCurrentMedia(const QUrl &url) {
   this->player_->setMediaUrl(url);
+  this->checkUrl();
 }
 
 /**

@@ -123,10 +123,12 @@ void MediaList::addMediaItemBox(const QUrl& url, const QString& artist,
  * @brief Import media.
  * @param url
  */
-void MediaList::importMedia(const QUrl& url) const {
+void MediaList::importMedia(const QUrl& url) {
+  qDebug() << "IMPORT" << url;
   auto check = QFileInfo(url.path());
   if (check.exists() && check.isFile()) {
     this->mediaPlayer_->setSource(url);
+    this->checkCurrentMedia(url);
   } else {
     // TODO: Media file problem!
   }
@@ -172,8 +174,8 @@ void MediaList::playPrevNextMedia(const Sequence& seq) {
  */
 void MediaList::initDatabase() {
   auto connection = QSharedPointer<ConnectionArgs>(new ConnectionArgs{
-      "QSQLITE", QApplication::applicationDirPath() + "/database.dat", "selene",
-      "123456", "localhost", 400});
+      "QSQLITE", QApplication::applicationDirPath() + "/database2.dat",
+      "selene", "123456", "localhost", 30000});
   this->database_ = QSharedPointer<MediaListSql>(new MediaListSql(connection));
   this->database_->connect();
 }
@@ -307,6 +309,7 @@ void MediaList::onChangePlayOrder() {
  * @param url
  */
 void MediaList::onRemoveMedia(const QUrl& url) {
+  qDebug() << "ON REMOVE!" << url;
   auto iterator = this->findMedia(url);
   if (iterator != this->mediaList_.end()) {
     this->player_->deleteMediaItemBox(*iterator);  // TODO: Change to QPointer?
@@ -318,6 +321,7 @@ void MediaList::onRemoveMedia(const QUrl& url) {
     }
     // remove media from the database.
     auto rows = this->database_->find(MediaDataEnum::MEDIA_PATH, url.path());
+    qDebug() << rows;
     for (const auto& row : rows) {
       this->database_->remove(row);
     }
@@ -333,7 +337,9 @@ void MediaList::onChangeMetaData() {
   auto metaData = this->mediaPlayer_->metaData();
   auto artist = metaData.value(QMediaMetaData::AlbumTitle).toString();
   auto title = metaData.value(QMediaMetaData::Title).toString();
-  this->addMediaItemBox(this->mediaPlayer_->source(), artist, title);
+  if (!metaData.isEmpty()) {
+    this->addMediaItemBox(this->mediaPlayer_->source(), artist, title);
+  }
 }
 
 #pragma endregion

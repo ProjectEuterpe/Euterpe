@@ -47,8 +47,8 @@ class PlayerController : public QWidget {
   nd auto getMetaData(const QMediaMetaData::Key& key) const -> QVariant;
   void initMediaList();
   void addMediaItem(const QUrl& url) const;
-  void playVideo() const;
-  void playAudio() const;
+  void playVideo();
+  void playAudio();
   void setTitle() const;
 
 #pragma clang diagnostic push

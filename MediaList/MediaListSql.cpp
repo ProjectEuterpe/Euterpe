@@ -86,13 +86,13 @@ void MediaListSql::connect() {
   // std::ignore = this->query("drop table Media");
   std::ignore = this->query(
       "create table Media ("
-      "mediaPath varchar(255) primary key,"
-      "mediaName varchar(255),"
+      "media_path varchar(255) primary key,"
+      "media_name varchar(255),"
       "md5 varchar(255),"
       "label varchar(255),"
-      "metaData varchar(2048),"
-      "playTimestamp bigint,"
-      "addTimestamp bigint)");
+      "meta_data varchar(2048),"
+      "play_timestamp bigint,"
+      "add_timestamp bigint)");
 }
 
 /**
@@ -140,12 +140,19 @@ auto MediaListSql::find(const MediaDataEnum &key, const QVariant &value) const
  * @param row: The row to be inserted.
  */
 void MediaListSql::insert(const QSharedPointer<MediaData> &row) const {
-  auto insertString =
-      QString("insert into Media values ('%1\','%2\','%3','%4','%5',%6,%7)")
-          .arg(row->mediaPath, row->mediaName, row->md5, row->label,
-               row->metaData, QString::number(row->playTimestamp),
-               QString::number(row->addTimestamp));
-  std::ignore = this->query(insertString);
+  QSqlQuery query(this->db_);
+  query.prepare(
+      "insert into Media values"
+      "(:media_path, :media_name, :md5, :label, :meta_data, :play_timestamp, "
+      ":add_timestamp)");
+  query.bindValue(":media_path", row->mediaPath);
+  query.bindValue(":media_name", row->mediaName);
+  query.bindValue(":md5", row->md5);
+  query.bindValue(":label", row->label);
+  query.bindValue(":meta_data", row->metaData);
+  query.bindValue(":play_timestamp", row->playTimestamp);
+  query.bindValue(":add_timestamp", row->addTimestamp);
+  qDebug() << query.exec();
 }
 
 /**
@@ -155,6 +162,7 @@ void MediaListSql::insert(const QSharedPointer<MediaData> &row) const {
 void MediaListSql::remove(const QSharedPointer<MediaData> &row) const {
   auto removeString =
       QString("delete from Media where media_path='%1'").arg(row->mediaPath);
+  qDebug() << removeString;
   std::ignore = this->query(removeString);
 }
 

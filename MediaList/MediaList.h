@@ -50,7 +50,7 @@ class MediaList : public QObject {
       -> QList<QSharedPointer<MediaData>>;
   void addMediaItemBox(const QUrl& url, const QString& artist,
                        const QString& title);
-  void importMedia(const QUrl& url) const;
+  void importMedia(const QUrl& url);
   void playStop(bool play) const;
   void playPrevNextMedia(const Sequence& seq);
 
