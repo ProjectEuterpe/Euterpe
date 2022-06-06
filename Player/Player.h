@@ -31,6 +31,7 @@
 #include <QFileDialog>
 #include <QMediaMetaData>
 #include <QMediaPlayer>
+#include <QMessageBox>
 #include <QMimeData>
 #include <QPointer>
 #include <QStackedWidget>
@@ -102,6 +103,7 @@ class Player : public QWidget {
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "NotImplementedFunctions"
  signals:
+  void remove(const QUrl &url);
   void showBar();
   void addMedia(const QUrl &url);
   void showFrame(const qreal &percent);

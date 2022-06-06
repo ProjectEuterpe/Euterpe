@@ -35,6 +35,7 @@ MediaList::MediaList(const QPointer<Player>& player)
   this->mediaPlayer_ = QPointer<QMediaPlayer>(new QMediaPlayer());
   connect(this->mediaPlayer_, &QMediaPlayer::metaDataChanged, this,
           &MediaList::onChangeMetaData);
+  connect(this->player_, &Player::remove, this, &MediaList::removeFromDatabase);
   this->initDatabase();
 }
 
@@ -90,6 +91,17 @@ auto MediaList::findInDatabase(const QUrl& url) const
 }
 
 /**
+ * @brief Remove a media from the database.
+ * @param url
+ * @return
+ */
+void MediaList::removeFromDatabase(const QUrl& url) const {
+  for (const auto& row : this->findInDatabase(url)) {
+    this->database_->remove(row);
+  }
+}
+
+/**
  * @brief Add a media item box.
  * @param url
  * @param artist
@@ -124,13 +136,12 @@ void MediaList::addMediaItemBox(const QUrl& url, const QString& artist,
  * @param url
  */
 void MediaList::importMedia(const QUrl& url) {
-  qDebug() << "IMPORT" << url;
   auto check = QFileInfo(url.path());
   if (check.exists() && check.isFile()) {
     this->mediaPlayer_->setSource(url);
     this->checkCurrentMedia(url);
   } else {
-    // TODO: Media file problem!
+    qDebug() << "!!!";
   }
 }
 

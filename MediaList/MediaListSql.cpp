@@ -152,7 +152,7 @@ void MediaListSql::insert(const QSharedPointer<MediaData> &row) const {
   query.bindValue(":meta_data", row->metaData);
   query.bindValue(":play_timestamp", row->playTimestamp);
   query.bindValue(":add_timestamp", row->addTimestamp);
-  qDebug() << query.exec();
+  query.exec();
 }
 
 /**
@@ -162,7 +162,6 @@ void MediaListSql::insert(const QSharedPointer<MediaData> &row) const {
 void MediaListSql::remove(const QSharedPointer<MediaData> &row) const {
   auto removeString =
       QString("delete from Media where media_path='%1'").arg(row->mediaPath);
-  qDebug() << removeString;
   std::ignore = this->query(removeString);
 }
 
