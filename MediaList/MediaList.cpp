@@ -236,7 +236,7 @@ void MediaList::checkCurrentMedia(const QUrl& url) {
       emit changeCurrentMedia(url);
       qDebug() << "index changed: current index =" << this->currentIndex_;
     } else {
-      // TODO: ILLEGAL URL!
+      qDebug() << "? Illegal url ?";
       return;
     }
   }
@@ -323,7 +323,7 @@ void MediaList::onRemoveMedia(const QUrl& url) {
   qDebug() << "ON REMOVE!" << url;
   auto iterator = this->findMedia(url);
   if (iterator != this->mediaList_.end()) {
-    this->player_->deleteMediaItemBox(*iterator);  // TODO: Change to QPointer?
+    this->player_->deleteMediaItemBox(*iterator);
     this->mediaList_.erase(iterator);
     auto index = std::distance(this->mediaList_.begin(), iterator);
     if (index == this->currentIndex_) {

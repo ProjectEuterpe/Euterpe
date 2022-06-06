@@ -406,7 +406,6 @@ void PlayerController::checkUrl() {
   auto type = this->getMetaData(QMediaMetaData::MediaType).toString();
   auto url = this->player_->url();
   auto fileInfo = QFileInfo(url.toLocalFile());
-  // TODO: better method?
   auto type1 = fileInfo.suffix().compare("mp3", Qt::CaseInsensitive);
   auto type2 = fileInfo.suffix().compare("wav", Qt::CaseInsensitive);
   auto type3 = fileInfo.suffix().compare("mid", Qt::CaseInsensitive);
