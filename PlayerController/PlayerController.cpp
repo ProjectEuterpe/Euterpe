@@ -135,7 +135,7 @@ void PlayerController::initMediaList() {
   // get data from database...
   for (const auto &row : this->mediaList_->databaseTable()) {
     auto url = QUrl::fromLocalFile(row->mediaPath);
-    auto check = QFileInfo(url.path());
+    auto check = QFileInfo(QString::fromLocal8Bit(url.path().toStdString()));
     if (!check.exists() || !check.isFile()) {
       auto result =
           QMessageBox::question(this, "File does not exist...",
@@ -152,7 +152,7 @@ void PlayerController::initMediaList() {
     auto metaData = MetaData(row->metaData);
     this->mediaList_->addMediaItemBox(
         url, metaData.get("Contributing artist").toString(),
-        metaData.get("Title").toString());
+        metaData.get("Title").toString(), url.fileName());
   }
 }
 

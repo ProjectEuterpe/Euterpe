@@ -108,13 +108,13 @@ void MediaList::removeFromDatabase(const QUrl& url) const {
  * @param title
  */
 void MediaList::addMediaItemBox(const QUrl& url, const QString& artist,
-                                const QString& title) {
+                                const QString& title, const QString& fileName) {
   auto mediaItemBox = new MediaItemBox(this->player_);
   auto metaData = mediaPlayer_->metaData();
   mediaItemBox->setMetaData(metaData);
   mediaItemBox->setMediaUrl(url);
   mediaItemBox->setMediaArtist(artist);
-  mediaItemBox->setMediaTitle(title);
+  mediaItemBox->setMediaTitle(title.isEmpty() ? fileName : title);
   if (!this->mediaList_.length()) {
     this->currentMediaItem_ = mediaItemBox;
     this->currentIndex_ = 0;
@@ -136,7 +136,7 @@ void MediaList::addMediaItemBox(const QUrl& url, const QString& artist,
  * @param url
  */
 void MediaList::importMedia(const QUrl& url) {
-  auto check = QFileInfo(url.path());
+  auto check = QFileInfo(QString::fromLocal8Bit(url.path().toStdString()));
   if (check.exists() && check.isFile()) {
     this->mediaPlayer_->setSource(url);
     // this->checkCurrentMedia(url);
@@ -349,7 +349,8 @@ void MediaList::onChangeMetaData() {
   auto artist = metaData.value(QMediaMetaData::AlbumTitle).toString();
   auto title = metaData.value(QMediaMetaData::Title).toString();
   if (!metaData.isEmpty()) {
-    this->addMediaItemBox(this->mediaPlayer_->source(), artist, title);
+    this->addMediaItemBox(this->mediaPlayer_->source(), artist, title,
+                          this->mediaPlayer_->source().fileName());
   }
 }
 
