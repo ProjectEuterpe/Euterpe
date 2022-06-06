@@ -134,12 +134,12 @@ void PlayerController::initMediaList() {
   this->mediaList_ = QPointer<MediaList>(new MediaList(player_));
   // get data from database...
   for (const auto &row : this->mediaList_->databaseTable()) {
-    auto url = QUrl("file://" + row->mediaPath);
+    auto url = QUrl::fromLocalFile(row->mediaPath);
     auto check = QFileInfo(url.path());
     if (!check.exists() || !check.isFile()) {
       auto result =
           QMessageBox::question(this, "File does not exist...",
-                                url.path() + "does not exist. Remove it?");
+                                url.path() + " does not exist. Remove it?");
       if (result == QMessageBox::Yes) {
         qDebug() << "remove:" << url;
         emit this->player_->remove(url);

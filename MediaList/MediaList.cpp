@@ -139,7 +139,7 @@ void MediaList::importMedia(const QUrl& url) {
   auto check = QFileInfo(url.path());
   if (check.exists() && check.isFile()) {
     this->mediaPlayer_->setSource(url);
-    this->checkCurrentMedia(url);
+    // this->checkCurrentMedia(url);
   } else {
     qDebug() << "!!!";
   }
@@ -185,8 +185,8 @@ void MediaList::playPrevNextMedia(const Sequence& seq) {
  */
 void MediaList::initDatabase() {
   auto connection = QSharedPointer<ConnectionArgs>(new ConnectionArgs{
-      "QSQLITE", QApplication::applicationDirPath() + "/database2.dat",
-      "selene", "123456", "localhost", 30000});
+      "QSQLITE", QApplication::applicationDirPath() + "/database.dat", "selene",
+      "123456", "localhost", 30000});
   this->database_ = QSharedPointer<MediaListSql>(new MediaListSql(connection));
   this->database_->connect();
 }
